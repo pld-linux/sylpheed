@@ -7,35 +7,39 @@
 %bcond_without ldap		# without ldap support
 %bcond_without faces		# without compfaces support
 #
-Summary:	GTK+ based fast e-mail client
-Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
-Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
-Name:		sylpheed
+%define		rname	sylpheed
+%define		snap	20031018
+#
+Summary:	GTK+2 based fast e-mail client
+Summary(pl):	Szybki klient poczty bazuj±cy na GTK+2
+Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+2
+Name:		sylpheed-gtk2
 Version:	0.9.7
-Release:	3
+Release:	0.%{snap}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
-# Source0-md5:	399deb5abd52396d26d6475689a5ec3f
-Patch0:		%{name}-ac_fixes.patch
-Patch1:		%{name}-desktop.patch
-Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
+Source0:	%{name}-%{version}-%{snap}.tar.bz2
+# Source0-md5:	5efb2025a2ca92a05b1f19ffbc98a4fd
+Patch0:		%{rname}-desktop.patch
+Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{rname}_save_all.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
-%{?with_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
-BuildRequires:	gdk-pixbuf-devel >= 0.8
-%{?with_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
-BuildRequires:	gtk+-devel >= 1.2.6
-%{?with_jconv:BuildRequires:	libjconv-devel}
+BuildRequires:	gtk+2-devel
+BuildRequires:	intltool
 BuildRequires:	libtool
-%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7c}
+# experimental sorting of bconds
+%{?with_faces:BuildRequires:	faces-devel}
+%{?with_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
+%{?with_jconv:BuildRequires:	libjconv-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
+%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7c}
 %{?with_faces:Requires:	faces}
 Requires:	mailcap
-URL:		http://sylpheed.good-day.net/
+URL:		http://sylpheed-gtk2.sourceforge.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Conflicts:	gpgme-devel >= 4.0
+Obsoletes:	sylpheed
 Obsoletes:	sylpheed-claws
 
 %description
@@ -76,16 +80,16 @@ recursos como:
 - catálogo de enderecos XML-based
 
 %prep
-%setup -q
+%setup -qn %{name}-%{version}-%{snap}
 %patch0 -p1
-%patch1 -p1
-%patch2 -p0
+%patch1 -p0
 
 %build
-rm -f missing
+glib-gettextize --copy --force
 %{__libtoolize}
-%{__gettextize}
-%{__aclocal}
+intltoolize --copy --force
+%{__aclocal} -I ac
+%{__autoheader}
 %{__autoconf}
 %{__automake}
 %configure \
@@ -100,6 +104,8 @@ rm -f missing
 
 %{__make}
 
+cd po; /bin/sh poconv.sh
+
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
@@ -107,27 +113,27 @@ install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install %{name}.desktop $RPM_BUILD_ROOT%{_desktopdir}
-install %{name}.png $RPM_BUILD_ROOT%{_pixmapsdir}
+install %{rname}.desktop $RPM_BUILD_ROOT%{_desktopdir}
+install %{rname}.png $RPM_BUILD_ROOT%{_pixmapsdir}
 
-%find_lang %{name}
+%find_lang %{rname}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f %{name}.lang
+%files -f %{rname}.lang
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog NEWS README TODO
 %attr(755,root,root) %{_bindir}/*
-%dir %{_datadir}/%{name}
-%dir %{_datadir}/%{name}/manual
-%{_datadir}/%{name}/manual/en
-%lang(ja) %{_datadir}/%{name}/manual/ja
-%dir %{_datadir}/%{name}/faq
-%{_datadir}/%{name}/faq/en
-%lang(de) %{_datadir}/%{name}/faq/de
-%lang(es) %{_datadir}/%{name}/faq/es
-%lang(fr) %{_datadir}/%{name}/faq/fr
-%lang(it) %{_datadir}/%{name}/faq/it
+%{_datadir}/%{rname}/faq/en
+%{_datadir}/%{rname}/manual/en
+%dir %{_datadir}/%{rname}
+%dir %{_datadir}/%{rname}/faq
+%dir %{_datadir}/%{rname}/manual
+%lang(de) %{_datadir}/%{rname}/faq/de
+%lang(es) %{_datadir}/%{rname}/faq/es
+%lang(fr) %{_datadir}/%{rname}/faq/fr
+%lang(it) %{_datadir}/%{rname}/faq/it
+%lang(ja) %{_datadir}/%{rname}/manual/ja
 %{_desktopdir}/sylpheed.desktop
 %{_pixmapsdir}/sylpheed.png
