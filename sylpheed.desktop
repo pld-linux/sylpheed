@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Sylpheed
 Comment=GTK+ based e-mail client
-Comment[ja]=·ÚÎÌ¤Ê E-¥á¡¼¥ë¥¯¥é¥¤¥¢¥ó¥È
+Comment[ja]=è»½é‡ãª E-ãƒ¡ãƒ¼ãƒ«ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆ
 Comment[pl]=Oparty na GTK+ program pocztowy
 Exec=sylpheed
 Icon=sylpheed.png
