@@ -78,7 +78,7 @@ recursos como:
 rm -f missing
 %{__libtoolize}
 #%{__gettextize}
-aclocal
+%{__aclocal}
 %{__autoconf}
 %{__autoheader}
 %{__automake}
