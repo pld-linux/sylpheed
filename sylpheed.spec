@@ -6,7 +6,7 @@ Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.7.5
-Release:	0.1
+Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
@@ -24,6 +24,7 @@ BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gtkhtml-devel >= 0.10.1
+BuildRequires:	gpgme-devel
 %{?_with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
@@ -90,7 +91,8 @@ recursos como:
 	--enable-gdk-pixbuf \
 	--enable-threads \
 	--enable-ssl \
-	--enable-ipv6
+	--enable-ipv6 \
+	--enable-gpgme
 
 %{__make}
 
@@ -119,5 +121,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/%{name}/manual
 %{_datadir}/%{name}/manual/en
 %lang(ja) %{_datadir}/%{name}/manual/ja
+%dir %{_datadir}/%{name}/faq
+%{_datadir}/%{name}/faq/en
+%lang(es) %{_datadir}/%{name}/faq/es
+%lang(fr) %{_datadir}/%{name}/faq/fr
 %{_applnkdir}/Network/Mail/*
 %{_pixmapsdir}/sylpheed.png
