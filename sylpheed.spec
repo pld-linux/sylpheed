@@ -1,21 +1,17 @@
 # Conditional build:
-# _with_jconv		- adds much more codesets to choice from
+# _without_jconv		- adds much more codesets to choice from
 
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	0.7.6
+Version:	0.7.7
 Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
 Source2:	%{name}.png
-# Hmm... it looks like in 0.7.4 this patch is not really needed, but I've
-# modified 0.7.3 version to apply on 0.7.4. If it's really not needed, kick it
-# out
-#Patch0:		%{name}-tmpdir.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	imlib-devel
@@ -25,7 +21,7 @@ BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gtkhtml-devel >= 0.10.1
 BuildRequires:	gpgme-devel
-%{?_with_jconv:BuildRequires:	libjconv-devel}
+%{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
 Requires:	faces
@@ -86,7 +82,7 @@ recursos como:
 #autoheader
 #automake --add-missing --foreign --copy
 %configure2_13 \
-	%{!?_with_jconv:--disable-jconv} \
+	%{?_without_jconv:--disable-jconv} \
 	--enable-impib \
 	--enable-gdk-pixbuf \
 	--enable-threads \
