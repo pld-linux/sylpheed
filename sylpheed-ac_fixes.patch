@@ -86,3 +86,29 @@
 +        AC_DEFINE($2)
 +    fi
 +  ])
+diff -urN sylpheed-0.8.3.orig/configure.in sylpheed-0.8.3/configure.in
+--- sylpheed-0.8.3.orig/configure.in	Sun Sep 15 14:23:27 2002
++++ sylpheed-0.8.3/configure.in	Sun Sep 15 14:28:19 2002
+@@ -81,22 +81,6 @@
+ AC_ARG_ENABLE(gdk-pixbuf,
+ 	[  --disable-gdk-pixbuf    Do not use gdk-pixbuf],
+ 	[ac_cv_enable_gdk_pixbuf=$enableval], [ac_cv_enable_gdk_pixbuf=yes])
+-AC_ARG_ENABLE(imlib,
+-	[  --disable-imlib         Do not use imlib],
+-	[ac_cv_enable_imlib=$enableval], [ac_cv_enable_imlib=yes])
+-
+-if test "$ac_cv_enable_gdk_pixbuf" = yes; then
+-	AM_PATH_GDK_PIXBUF(0.8.0,
+-		[AC_DEFINE(HAVE_GDK_PIXBUF)
+-		 ac_cv_enable_imlib=no], [ac_cv_enable_gdk_pixbuf=no])
+-fi
+-if test "$ac_cv_enable_imlib" = yes; then
+-	AM_PATH_GDK_IMLIB(1.9,
+-		AC_DEFINE(HAVE_GDK_IMLIB), [ac_cv_enable_imlib=no])
+-fi
+-if test "$ac_cv_enable_gdk_pixbuf" = no -a "$ac_cv_enable_imlib" = no; then
+-	AC_MSG_WARN(*** Built-in image view will not be supported ***)
+-fi
+ 
+ dnl GPGME is used to support OpenPGP 
+ AC_ARG_ENABLE(gpgme,
