@@ -3,6 +3,7 @@
 
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
+Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.7.4
 Release:	1
@@ -57,6 +58,19 @@ Szybki klient poczty o mo¿liwo¶ciach takich jak
 - obs³uga dowolnej ilo¶ci kont pocztowych
 - funkcje sortowania o ksi±¿ka adresowa
 - wsparcie szyfrowania SSL
+
+%description -l pt_BR
+Este programa é um rápido cliente de email modo gráfico o qual possui
+recursos como:
+- interface gráfica intuitiva e amigável
+- cliente integrado de notícias (parcialmente implementado)
+- habilitado para operacão a partir do teclado
+- Mew/Wanderlust-like key bind
+- multipart MIME
+- controle de múltiplas contas de email (sem limite)
+- armazenamento de mensagens
+- funcão de ordenacão/classificacão de mensagens
+- catálogo de enderecos XML-based
 
 %prep
 %setup -q
