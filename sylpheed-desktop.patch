@@ -1,0 +1,14 @@
+diff -urN sylpheed-0.8.2.orig/sylpheed.desktop sylpheed-0.8.2/sylpheed.desktop
+--- sylpheed-0.8.2.orig/sylpheed.desktop	Wed Aug 28 22:54:57 2002
++++ sylpheed-0.8.2/sylpheed.desktop	Wed Aug 28 22:58:08 2002
+@@ -1,8 +1,10 @@
+ [Desktop Entry]
+ Name=Sylpheed
+ Name[ja]=Sylpheed
++Name[pl]=Sylpheed
+ Comment=E-Mail client
+ Comment[ja]=電子メールクライアント
++Comment[pl]=Klient poczty elektronicznej
+ Exec=sylpheed
+ Icon=sylpheed.png
+ Terminal=0
