@@ -94,7 +94,7 @@ rm -f missing
 	--enable-threads \
 	%{?with_faces:--disable-compfaces} \
 	%{?with_gpg:--enable-gpgme} \
-	%{?with_ipv6:--enable-ipv6} \
+	%{!?with_ipv6:--disable-ipv6} \
 	%{?with_ldap:--enable-ldap} \
 	%{?with_ssl:--enable-ssl}
 
