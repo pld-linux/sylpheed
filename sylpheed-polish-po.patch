@@ -1,195 +1,180 @@
-diff -Nur sylpheed-0.6.3.orig/po/pl.po sylpheed-0.6.3/po/pl.po
---- sylpheed-0.6.3.orig/po/pl.po	Mon Oct  8 16:29:00 2001
-+++ sylpheed-0.6.3/po/pl.po	Tue Oct  9 09:01:16 2001
-@@ -1077,9 +1077,8 @@
+diff -Nur sylpheed-0.6.4.orig/po/pl.po sylpheed-0.6.4/po/pl.po
+--- sylpheed-0.6.4.orig/po/pl.po	Sun Oct 21 16:12:13 2001
++++ sylpheed-0.6.4/po/pl.po	Mon Oct 22 08:11:24 2001
+@@ -255,9 +255,8 @@
+ msgstr "/_Plik/Nowa _ksi±¿ka"
  
- #. gtk_container_set_border_width(GTK_CONTAINER(window), 8);
- #: src/editaddress.c:176
+ #: src/addressbook.c:346
 -#, fuzzy
- msgid "Edit address"
--msgstr "Edytuj ksi±¿kê adresow±"
-+msgstr "Edytuj adres"
+ msgid "/_File/New _vCard"
+-msgstr "/_Plik/Nowy _V-Card"
++msgstr "/_Plik/Nowy _vCard"
  
- #: src/editaddress.c:318
- msgid "Add New Person"
-@@ -1342,22 +1341,18 @@
- msgstr "Nie mo¿na odczytaæ baz wyszukiwania z serwera - ustaw rêcznie"
+ #: src/addressbook.c:348
+ msgid "/_File/New _J-Pilot"
+@@ -317,14 +316,12 @@
+ msgstr "/_Adres/_Usuñ"
  
- #: src/editvcard.c:96
+ #: src/addressbook.c:366
 -#, fuzzy
- msgid "File does not appear to be vCard format."
- msgstr "Plik nie wygl±da na bêd±cy w formacie VCard."
+ msgid "/_Tools"
+ msgstr "/_Narzêdzia"
  
- #: src/editvcard.c:132
+ #: src/addressbook.c:367
 -#, fuzzy
- msgid "Select vCard File"
- msgstr "Wybierz plik VCard"
+ msgid "/_Tools/Import _LDIF file"
+-msgstr "/_Plik/_Importuj plik mbox..."
++msgstr "/_Plik/Importuj plik _LDIF"
  
- #: src/editvcard.c:188 src/editvcard.c:291
+ #: src/addressbook.c:368 src/compose.c:424 src/mainwindow.c:580
+ msgid "/_Help"
+@@ -561,9 +558,8 @@
+ msgstr "Katalog"
+ 
+ #: src/addressbook.c:3134
 -#, fuzzy
- msgid "Edit vCard Entry"
- msgstr "Edytuj wpis VCard"
+ msgid "vCard"
+-msgstr "V-Card"
++msgstr "vCard"
  
- #: src/editvcard.c:296
+ #: src/addressbook.c:3150 src/addressbook.c:3166
+ msgid "J-Pilot"
+@@ -1420,9 +1416,8 @@
+ msgstr "/_Od¶wie¿ drzewo katalogów"
+ 
+ #: src/folderview.c:217 src/folderview.c:231
 -#, fuzzy
- msgid "Add New vCard Entry"
- msgstr "Dodaj nowy wpis VCard"
+ msgid "/Re_scan folder tree"
+-msgstr "/_Od¶wie¿ drzewo katalogów"
++msgstr "/Prze_skanuj ponownie drzewo katalogów"
  
-@@ -1404,7 +1399,7 @@
- 
- #: src/folderview.c:215 src/folderview.c:227
- msgid "/_Update folder tree"
--msgstr "/_Od¶wierz drzewo katalogów"
-+msgstr "/_Od¶wie¿ drzewo katalogów"
- 
- #: src/folderview.c:216
+ #: src/folderview.c:219
  msgid "/Remove _mailbox"
-@@ -2074,14 +2069,12 @@
- msgstr "/_Plik/_Koniec"
+@@ -1480,14 +1475,12 @@
+ msgstr "Przeszukiwanie katalogu %s ..."
  
- #: src/mainwindow.c:385
+ #: src/folderview.c:620
 -#, fuzzy
- msgid "/_Edit/_Find in current message"
--msgstr "/_Edit/Za_wiñ bie¿±cy akapit"
-+msgstr "/_Edycja/Zna_jd¼ w bie¿±cej wiadomo¶ci"
+ msgid "Rescanning folder tree..."
+-msgstr "Od¶wie¿anie widoku katalogu..."
++msgstr "Ponowne skanowanie drzewa katalogów..."
  
- #: src/mainwindow.c:386
+ #: src/folderview.c:639
 -#, fuzzy
- msgid "/_Edit/_Search folder"
--msgstr "/_Edycja/_Szukaj"
-+msgstr "/_Edycja/_Przeszukaj katalog"
+ msgid "Rescanning all folder trees..."
+-msgstr "Przeszukiwanie katalogu %s ..."
++msgstr "Ponowne skanowanie wszystkich drzew katalogów ..."
  
- #: src/mainwindow.c:388 src/summaryview.c:368
- msgid "/_View"
-@@ -2468,9 +2461,8 @@
- msgstr "/Konfigura_cja/Ustawienia _filtrowania"
+ #: src/folderview.c:803 src/prefs_account.c:711
+ msgid "Inbox"
+@@ -1865,28 +1858,24 @@
+ msgstr "Wybierz importowany plik"
  
- #: src/mainwindow.c:569
+ #: src/importldif.c:139
 -#, fuzzy
- msgid "/_Configuration/_Preferences for current account..."
--msgstr "/Konfigura_cja/_Preferencje konta..."
-+msgstr "/Konfigura_cja/_Preferencje bie¿±cego konta..."
+ msgid "Please select a file."
+-msgstr "Wybierz klucz dla `%s'"
++msgstr "Wybierz plik."
  
- #: src/mainwindow.c:571
- msgid "/_Configuration/---"
-@@ -2758,13 +2750,12 @@
- msgstr "Eksportowanie wiadomo¶ci z %s do %s...\n"
- 
- #: src/message_search.c:88
+ #: src/importldif.c:144
 -#, fuzzy
- msgid "Find in current message"
--msgstr "Wysy³anie wiadomo¶ci"
-+msgstr "Znajd¼ w bie¿±cej wiadomo¶ci"
+ msgid "Address book name must be supplied."
+-msgstr "Musi byæ podana nazwa grupy."
++msgstr "Musi byæ podana nazwa ksi±¿ki adresowej."
  
- #: src/message_search.c:109
- msgid "Find text:"
+ #: src/importldif.c:158
+-#, fuzzy
+ msgid "Error importing LDIF file."
+-msgstr "Wybierz importowany plik"
++msgstr "B³±d importu pliku LDIF."
+ 
+ #: src/importldif.c:199
+-#, fuzzy
+ msgid "Select LDIF File"
+-msgstr "Wybierz plik"
++msgstr "Wybierz plik LDIF"
+ 
+ #: src/importldif.c:253
+ msgid "Import LDIF file into Address Book"
 -msgstr ""
-+msgstr "Znajd¼ tekst:"
++msgstr "Importuj plik LDIF do ksi±¿ki adresowej"
  
- #: src/message_search.c:124 src/summary_search.c:184
- msgid "Case sensitive"
-@@ -2787,14 +2778,12 @@
- msgstr "Nie znaleziono szukanego ci±gu."
+ #: src/inc.c:201 src/inc.c:259 src/send.c:349
+ msgid "Standby"
+@@ -2075,9 +2064,8 @@
+ msgstr "/_Plik/Dod_aj skrzynkê..."
  
- #: src/message_search.c:194
+ #: src/mainwindow.c:366
 -#, fuzzy
- msgid "Beginning of message reached; continue from end?"
--msgstr "Osi±gniêto pocz±tek listy; zacz±æ od koñca?"
-+msgstr "Osi±gniêto pocz±tek wiadomo¶ci; zacz±æ od koñca?"
+ msgid "/_File/_Rescan folder tree"
+-msgstr "/_Plik/_Od¶wie¿ drzewo katalogów"
++msgstr "/_Plik/_Przeskanuj ponownie drzewo katalogów"
  
- #: src/message_search.c:197
+ #: src/mainwindow.c:367
+ msgid "/_File/_Folder"
+@@ -4156,9 +4144,8 @@
+ 
+ #. S_COL_UNREAD
+ #: src/prefs_summary_column.c:69
 -#, fuzzy
- msgid "End of message reached; continue from beginning?"
--msgstr "Osi±gniêto koniec listy; zacz±æ od pocz±tku?"
-+msgstr "Osi±gniêto koniec wiadomo¶ci; zacz±æ od pocz±tku?"
+ msgid "Attachment"
+-msgstr "Do³±cz"
++msgstr "Za³±cznik"
  
- #: src/message_search.c:200 src/summary_search.c:307
- msgid "Search finished"
-@@ -3104,9 +3093,8 @@
- msgstr "Preferencje nowego konta"
+ #. S_COL_MIME
+ #: src/prefs_summary_column.c:70 src/summaryview.c:396
+@@ -4181,45 +4168,40 @@
+ msgstr "Numer"
  
- #: src/prefs_account.c:506
+ #: src/prefs_summary_column.c:166
 -#, fuzzy
- msgid "Account preferences"
--msgstr "Wspólne preferencje "
-+msgstr "Preferencje konta"
+ msgid "Creating summary column setting window...\n"
+-msgstr "Tworzenie okna ustawieñ nag³ówka u¿ytkownika...\n"
++msgstr "Tworzenie okna ustawieñ kolumn podgl±du...\n"
  
- #: src/prefs_account.c:529
- msgid "Creating account preferences window...\n"
-@@ -3417,9 +3405,8 @@
- msgstr "Automatycznie sprawdzaj pocztê"
- 
- #: src/prefs_common.c:812
+ #: src/prefs_summary_column.c:174
 -#, fuzzy
- msgid "every"
--msgstr "Nigdy"
-+msgstr "ka¿de"
+ msgid "Summary display item setting"
+-msgstr "/Pod_sumowanie/Ustaw wy¶wietlane _elementy..."
++msgstr "Ustawienia wy¶wietlanych elementów podsumowania"
  
- #: src/prefs_common.c:824
- msgid "minute(s)"
-@@ -4141,9 +4128,8 @@
- msgstr "Naprawdê chcesz usun±æ tê regu³ê?"
+ #: src/prefs_summary_column.c:191
+ msgid ""
+ "Select items to be displayed on the summary view.\n"
+ "You can modify the order by Up / Down button, or dragging the items."
+ msgstr ""
++"Wybierz wy¶wietlane w widoku podsumowania elementy.\n"
++"Mo¿esz zmieniæ ich kolejno¶æ przez Góra / Dó³ lub przeci±gaj±c elementy."
  
- #: src/procmime.c:701
+ #: src/prefs_summary_column.c:218
 -#, fuzzy
+ msgid "Available items"
+-msgstr "Dostêpne adresy"
++msgstr "Dostêpne elementy"
+ 
+ #: src/prefs_summary_column.c:236
+-#, fuzzy
+ msgid "  ->  "
+-msgstr " -> "
++msgstr "  ->  "
+ 
+ #: src/prefs_summary_column.c:240
+-#, fuzzy
+ msgid "  <-  "
+-msgstr " <- "
++msgstr "  <-  "
+ 
+ #: src/prefs_summary_column.c:261
+-#, fuzzy
+ msgid "Displayed items"
+-msgstr "Wy¶wietlone nag³ówki "
++msgstr "Wy¶wietlone elementy"
+ 
+ #: src/prefs_summary_column.c:302
+-#, fuzzy
+ msgid " Revert to default "
+-msgstr " Ustaw jako podstawowe konto "
++msgstr " Przywróæ domy¶lne "
+ 
+ #: src/procmime.c:694
  msgid "procmime_get_text_content(): Code conversion failed.\n"
--msgstr "B³±d konwersji kodu.\n"
-+msgstr "procmine_get_text_content(): B³±d konwersji kodu.\n"
- 
- #: src/procmsg.c:137 src/procmsg.c:153
- msgid "Cache data is corrupted\n"
-@@ -4477,13 +4463,12 @@
- msgstr "  Nadawca: %s\n"
- 
- #: src/summary_search.c:98
--#, fuzzy
- msgid "Search folder"
--msgstr "Wybierz katalog"
-+msgstr "Przeszukaj katalog"
- 
- #: src/summary_search.c:172
- msgid "Body:"
--msgstr ""
-+msgstr "Cia³o:"
- 
- #: src/summary_search.c:196
- msgid "Select all matched"
-@@ -4570,19 +4555,16 @@
- msgstr "/Dodaj nadawcê do _ksi±¿ki adresowej"
- 
- #: src/summaryview.c:369
--#, fuzzy
- msgid "/_View/Open in new _window"
--msgstr "/Ot_wórz w nowym oknie"
-+msgstr "/W_Widok/Ot_wórz w nowym oknie"
- 
- #: src/summaryview.c:371
--#, fuzzy
- msgid "/_View/_Source"
--msgstr "/_Widok/P_oka¿ ¼ród³o"
-+msgstr "/_Widok/¬ród³_o"
- 
- #: src/summaryview.c:372
--#, fuzzy
- msgid "/_View/All _header"
--msgstr "/_Widok/Poka¿ wszystkie na_g³ówki"
-+msgstr "/_Widok/Wszystkie na_g³ówki"
- 
- #: src/summaryview.c:375
- msgid "/_Print..."
-@@ -4768,14 +4750,12 @@
- msgstr "Wiadomo¶æ %s/%d ustawiona do skasowania\n"
- 
- #: src/summaryview.c:2246
--#, fuzzy
- msgid "Delete message(s)"
- msgstr "Usuñ wiadomo¶æ"
- 
- #: src/summaryview.c:2247
--#, fuzzy
- msgid "Do you really want to delete message(s) from the trash?"
--msgstr "Czy naprawdê chcesz usun±æ ten nag³ówek?"
-+msgstr "Czy naprawdê chcesz usun±æ wiadomo¶ci z kosza?"
- 
- #: src/summaryview.c:2271 src/summaryview.c:2273
- msgid "Deleting duplicated messages..."
