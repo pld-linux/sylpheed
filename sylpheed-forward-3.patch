@@ -1,0 +1,449 @@
+diff -Naur sylpheed/src/compose.c sylpheed-test-patch/src/compose.c
+--- sylpheed/src/compose.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/compose.c	Wed Apr 11 00:24:00 2001
+@@ -510,7 +510,206 @@
+ 	gtk_text_insert(text, NULL, NULL, NULL, "\n", 1); \
+ }
+ 
+-void compose_forward(MsgInfo *msginfo, gboolean as_attach)
++
++static gchar *procmime_get_file_name(MimeInfo *mimeinfo)
++{
++	gchar *base;
++	gchar *filename;
++
++	g_return_val_if_fail(mimeinfo != NULL, NULL);
++
++	if (MIME_TEXT_HTML == mimeinfo->mime_type)
++		base = "mimetmp.html";
++	else {
++		base = mimeinfo->filename ? mimeinfo->filename
++			: mimeinfo->name ? mimeinfo->name : "mimetmp";
++		base = g_basename(base);
++		if (*base == '\0') base = "mimetmp";
++	}
++
++	filename = g_strconcat(get_mime_tmp_dir(), G_DIR_SEPARATOR_S,
++			       base, NULL);
++
++	return filename;
++}
++
++static gchar * mime_extract_file(gchar * source, MimeInfo *partinfo)
++{
++	gchar *filename;
++
++	if (!partinfo) return;
++
++	filename = procmime_get_file_name(partinfo);
++
++	if (procmime_get_part(filename, source, partinfo) < 0)
++		alertpanel_error
++			(_("Can't get the part of multipart message."));
++
++	//	g_free(filename);
++	return filename;
++}
++
++static void compose_forward_attach_parts(Compose * compose,
++					 MsgInfo * msginfo)
++{
++
++	FILE *fp;
++	gchar *file;
++	MimeInfo *mimeinfo;
++	MsgInfo *tmpmsginfo;
++	gchar *p;
++	gchar *boundary;
++	gint boundary_len = 0;
++	gchar buf[BUFFSIZE];
++	glong fpos, prev_fpos;
++	gint npart;
++	gchar * source;
++	gchar * filename;
++
++	g_return_if_fail(msginfo != NULL);
++	
++#if USE_GPGME
++	for (;;) {
++		if ((fp = procmsg_open_message(msginfo)) == NULL) return;
++		mimeinfo = procmime_scan_mime_header(fp);
++		if (!mimeinfo) break;
++
++		if (!MSG_IS_ENCRYPTED(msginfo->flags) &&
++		    rfc2015_is_encrypted(mimeinfo)) {
++			MSG_SET_FLAGS(msginfo->flags, MSG_ENCRYPTED);
++		}
++		if (MSG_IS_ENCRYPTED(msginfo->flags) &&
++		    !msginfo->plaintext_file  &&
++		    !msginfo->decryption_failed) {
++			rfc2015_decrypt_message(msginfo, mimeinfo, fp);
++			if (msginfo->plaintext_file &&
++			    !msginfo->decryption_failed) {
++				fclose(fp);
++				continue;
++			}
++		}
++		
++		break;
++	}
++#else /* !USE_GPGME */
++	if ((fp = procmsg_open_message(msginfo)) == NULL) return;
++	mimeinfo = procmime_scan_mime_header(fp);
++#endif /* USE_GPGME */
++
++	fclose(fp);
++	if (!mimeinfo) return;
++
++	if ((fp = procmsg_open_message(msginfo)) == NULL) return;
++
++	g_return_if_fail(mimeinfo != NULL);
++	g_return_if_fail(mimeinfo->mime_type != MIME_TEXT);
++
++	if (mimeinfo->mime_type == MIME_MULTIPART) {
++		g_return_if_fail(mimeinfo->boundary != NULL);
++		g_return_if_fail(mimeinfo->sub == NULL);
++	}
++	g_return_if_fail(fp != NULL);
++
++	boundary = mimeinfo->boundary;
++
++	if (boundary) {
++		boundary_len = strlen(boundary);
++
++		/* look for first boundary */
++		while ((p = fgets(buf, sizeof(buf), fp)) != NULL)
++			if (IS_BOUNDARY(buf, boundary, boundary_len)) break;
++		if (!p) {
++			fclose(fp);
++			return;
++		}
++	}
++
++	if ((fpos = ftell(fp)) < 0) {
++		perror("ftell");
++		fclose(fp);
++		return;
++	}
++
++	for (npart = 0;; npart++) {
++		MimeInfo *partinfo;
++		gboolean eom = FALSE;
++
++		prev_fpos = fpos;
++
++		partinfo = procmime_scan_mime_header(fp);
++		if (!partinfo) break;
++
++		if (npart != 0)
++			procmime_mimeinfo_insert(mimeinfo, partinfo);
++		else
++			procmime_mimeinfo_free(partinfo);
++
++		/* look for next boundary */
++		buf[0] = '\0';
++		while ((p = fgets(buf, sizeof(buf), fp)) != NULL) {
++			if (IS_BOUNDARY(buf, boundary, boundary_len)) {
++				if (buf[2 + boundary_len]     == '-' &&
++				    buf[2 + boundary_len + 1] == '-')
++					eom = TRUE;
++				break;
++			}
++		}
++		if (p == NULL)
++			eom = TRUE;	/* broken MIME message */
++		fpos = ftell(fp);
++
++		partinfo->size = fpos - prev_fpos - strlen(buf);
++
++		if (eom) break;
++	}
++	//g_message ("** at " __PRETTY_FUNCTION__ ":%d:", __LINE__);
++
++	source = procmsg_get_message_file_path(msginfo);
++
++	g_return_if_fail(mimeinfo != NULL);
++
++	if (!mimeinfo->main && mimeinfo->parent)
++		{
++			filename = mime_extract_file(source, mimeinfo);
++
++			compose_attach_append(compose, filename,
++					      mimeinfo->mime_type);
++
++			g_free(filename);
++		}
++
++	if (mimeinfo->sub && mimeinfo->sub->children)
++		{
++			filename = mime_extract_file(source, mimeinfo->sub);
++
++			compose_attach_append(compose, filename,
++					      mimeinfo->sub->mime_type);
++
++			g_free(filename);
++		}
++
++	if (mimeinfo->children) {
++		MimeInfo *child;
++
++		child = mimeinfo->children;
++		while (child) {
++			filename = mime_extract_file(source, child);
++
++			compose_attach_append(compose, filename,
++					      child->mime_type);
++
++			g_free(filename);
++
++			child = child->next;
++		}
++	}
++
++	fclose(fp);
++
++	procmime_mimeinfo_free_all(mimeinfo);
++}
++
++void compose_forward(MsgInfo *msginfo, gboolean quote, gboolean as_attach)
+ {
+ 	Compose *compose;
+ 	PrefsAccount *account;
+@@ -556,21 +755,36 @@
+ 			g_warning(_("Can't get text part\n"));
+ 		else {
+ 			/* insert header */
+-			gtk_text_insert(text, NULL, NULL, NULL,
+-					_("\n\nBegin forwarded message:\n\n"), -1);
+-			INSERT_FW_HEADER(date,       "Date: ");
+-			INSERT_FW_HEADER(from,       "From: ");
+-			INSERT_FW_HEADER(to,         "To: ");
+-			INSERT_FW_HEADER(newsgroups, "Newsgroups: ");
+-			INSERT_FW_HEADER(subject,    "Subject: ");
+-			gtk_text_insert(text, NULL, NULL, NULL, "\n\n", 2);
++			
++			gchar * forward_str;
+ 
+-			/* forward body */
+-			while (fgets(buf, sizeof(buf), fp) != NULL)
++			if (compose_parse_header(compose, msginfo) >= 0) {
++				forward_str = compose_quote_parse_fmt
++					(compose, msginfo,
++					 prefs_common.forwardfmt);
+ 				gtk_text_insert(text, NULL, NULL, NULL,
+-						buf, -1);
++						forward_str, -1);
++				g_free(forward_str);
++			}
++
++			if (quote)
++				{
++					compose_quote_file(compose, msginfo,
++							   fp);
++				}
++			else
++				{
++					/* forward body */
++					while (fgets(buf, sizeof(buf), fp)
++					       != NULL)
++						gtk_text_insert(text, NULL,
++								NULL, NULL,
++								buf, -1);
++				}
++
+ 			fclose(fp);
+ 		}
++		compose_forward_attach_parts(compose, msginfo);
+ 	}
+ 
+ 	if (prefs_common.auto_sig)
+@@ -977,6 +1191,13 @@
+ 				break;
+ 			case 't':
+ 				str = msginfo->to;
++				sp++;
++				break;
++			case 'g':
++				str = compose->followup_to ?
++					compose->followup_to :
++						compose->newsgroups ?
++					compose->newsgroups : "";
+ 				sp++;
+ 				break;
+ 			case 'i':
+diff -Naur sylpheed/src/compose.h sylpheed-test-patch/src/compose.h
+--- sylpheed/src/compose.h	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/compose.h	Wed Apr 11 00:24:00 2001
+@@ -171,6 +171,7 @@
+ 				 gboolean	 quote,
+ 				 gboolean	 to_all);
+ void compose_forward		(MsgInfo	*msginfo,
++				 gboolean	 quote,
+ 				 gboolean	 as_attach);
+ void compose_reedit		(MsgInfo	*msginfo);
+ 
+diff -Naur sylpheed/src/mainwindow.c sylpheed-test-patch/src/mainwindow.c
+--- sylpheed/src/mainwindow.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/mainwindow.c	Wed Apr 11 00:24:00 2001
+@@ -1801,10 +1801,12 @@
+ 		compose_reply(msginfo, prefs_common.reply_with_quote, TRUE);
+ 		break;
+ 	case COMPOSE_FORWARD:
+-		compose_forward(msginfo, FALSE);
++		compose_forward(msginfo, prefs_common.forward_with_quote,
++				FALSE);
+ 		break;
+ 	case COMPOSE_FORWARD_AS_ATTACH:
+-		compose_forward(msginfo, TRUE);
++		compose_forward(msginfo, prefs_common.forward_with_quote,
++				TRUE);
+ 		break;
+ 	default:
+ 		compose_reply(msginfo, prefs_common.reply_with_quote, FALSE);
+diff -Naur sylpheed/src/prefs_common.c sylpheed-test-patch/src/prefs_common.c
+--- sylpheed/src/prefs_common.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/prefs_common.c	Wed Apr 11 00:24:00 2001
+@@ -87,8 +87,10 @@
+ 
+ static struct Compose {
+ 	GtkWidget *checkbtn_quote;
++	GtkWidget *checkbtn_quote_forward;
+ 	GtkWidget *entry_quotemark;
+ 	GtkWidget *text_quotefmt;
++	GtkWidget *text_forwardfmt;
+ 	GtkWidget *checkbtn_autosig;
+ 	GtkWidget *entry_sigsep;
+ 
+@@ -254,11 +256,17 @@
+ 	{"reply_with_quote", "TRUE", &prefs_common.reply_with_quote, P_BOOL,
+ 	 &compose.checkbtn_quote,
+ 	 prefs_set_data_from_toggle, prefs_set_toggle},
++	{"forward_with_quote", "TRUE", &prefs_common.forward_with_quote,
++	 P_BOOL, &compose.checkbtn_quote_forward,
++	 prefs_set_data_from_toggle, prefs_set_toggle},
+ 	{"quote_mark", "> ", &prefs_common.quotemark, P_STRING,
+ 	 &compose.entry_quotemark, prefs_set_data_from_entry, prefs_set_entry},
+ 	{"quote_format", "On %d\\n%f wrote:\\n\\n",
+ 	 &prefs_common.quotefmt, P_STRING, &compose.text_quotefmt,
+ 	 prefs_set_data_from_text, prefs_set_text},
++	{"forward_format", "\\n\\nBegin forwarded message:\\n\\nDate: %d\\nFrom: %f\\nTo: %t\\nNewsgroups: %g\\nSubject: %s\\n\\n",
++	 &prefs_common.forwardfmt, P_STRING, &compose.text_forwardfmt,
++	 prefs_set_data_from_text, prefs_set_text},
+ 
+ 	{"auto_signature", "TRUE", &prefs_common.auto_sig, P_BOOL,
+ 	 &compose.checkbtn_autosig,
+@@ -948,14 +956,18 @@
+ 	GtkWidget *frame_quote;
+ 	GtkWidget *vbox_quote;
+ 	GtkWidget *checkbtn_quote;
++	GtkWidget *checkbtn_quote_forward;
+ 	GtkWidget *hbox1;
+ 	GtkWidget *label_quotemark;
+ 	GtkWidget *entry_quotemark;
+ 	GtkWidget *hbox2;
+ 	GtkWidget *label_quotefmt;
++	GtkWidget *label_forwardfmt;
+ 	GtkWidget *btn_quotedesc;
+ 	GtkWidget *scrolledwin_quotefmt;
++	GtkWidget *scrolledwin_forwardfmt;
+ 	GtkWidget *text_quotefmt;
++	GtkWidget *text_forwardfmt;
+ 
+ 	GtkWidget *frame_sig;
+ 	GtkWidget *vbox_sig;
+@@ -986,6 +998,8 @@
+ 
+ 	PACK_CHECK_BUTTON (vbox_quote, checkbtn_quote,
+ 			   _("Quote message when replying"));
++	PACK_CHECK_BUTTON (vbox_quote, checkbtn_quote_forward,
++			   _("Quote message when forwarding"));
+ 
+ 	hbox1 = gtk_hbox_new (FALSE, 8);
+ 	gtk_widget_show (hbox1);
+@@ -1028,6 +1042,29 @@
+ 	gtk_text_set_editable (GTK_TEXT (text_quotefmt), TRUE);
+ 	gtk_widget_set_usize(text_quotefmt, -1, 60);
+ 
++	hbox2 = gtk_hbox_new (FALSE, 0);
++	gtk_widget_show (hbox2);
++	gtk_box_pack_start (GTK_BOX (vbox_quote), hbox2, TRUE, TRUE, 0);
++
++	label_forwardfmt = gtk_label_new (_("Forward format:"));
++	gtk_widget_show (label_forwardfmt);
++	gtk_box_pack_start (GTK_BOX (hbox2), label_forwardfmt, FALSE,
++			    FALSE, 0);
++
++	scrolledwin_forwardfmt = gtk_scrolled_window_new (NULL, NULL);
++	gtk_widget_show (scrolledwin_forwardfmt);
++	gtk_box_pack_start (GTK_BOX (vbox_quote), scrolledwin_forwardfmt, TRUE, TRUE, 0);
++	gtk_scrolled_window_set_policy
++		(GTK_SCROLLED_WINDOW (scrolledwin_forwardfmt),
++		 GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
++
++	text_forwardfmt = gtk_text_new (NULL, NULL);
++	gtk_widget_show (text_forwardfmt);
++	gtk_container_add(GTK_CONTAINER(scrolledwin_forwardfmt),
++			  text_forwardfmt);
++	gtk_text_set_editable (GTK_TEXT (text_forwardfmt), TRUE);
++	gtk_widget_set_usize(text_forwardfmt, -1, 60);
++
+ 	PACK_FRAME(vbox1, frame_sig, _("Signature"));
+ 
+ 	vbox_sig = gtk_vbox_new (FALSE, VSPACING_NARROW);
+@@ -1085,8 +1122,10 @@
+ 		(hbox4, checkbtn_wrapatsend, _("Wrap before sending"));
+ 
+ 	compose.checkbtn_quote   = checkbtn_quote;
++	compose.checkbtn_quote_forward   = checkbtn_quote_forward;
+ 	compose.entry_quotemark  = entry_quotemark;
+ 	compose.text_quotefmt    = text_quotefmt;
++	compose.text_forwardfmt    = text_forwardfmt;
+ 	compose.checkbtn_autosig = checkbtn_autosig;
+ 	compose.entry_sigsep     = entry_sigsep;
+ 
+@@ -2184,6 +2223,7 @@
+ 		 "%I:\n"
+ 		 "%s:\n"
+ 		 "%t:\n"
++		 "%g:\n"
+ 		 "%i:\n"
+ 		 "%%:");
+ 
+@@ -2198,6 +2238,7 @@
+ 		   "Initial of Sender\n"
+ 		   "Subject\n"
+ 		   "To\n"
++		   "Newsgroups\n"
+ 		   "Message-ID\n"
+ 		   "%"));
+ 
+diff -Naur sylpheed/src/prefs_common.h sylpheed-test-patch/src/prefs_common.h
+--- sylpheed/src/prefs_common.h	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/prefs_common.h	Wed Apr 11 00:24:01 2001
+@@ -50,8 +50,10 @@
+ 
+ 	/* Compose */
+ 	gboolean reply_with_quote;
++	gboolean forward_with_quote;
+ 	gchar *quotemark;
+ 	gchar *quotefmt;
++	gchar *forwardfmt;
+ 	gboolean auto_sig;
+ 	gchar *sig_sep;
+ 	gint linewrap_len;
+diff -Naur sylpheed/src/summaryview.c sylpheed-test-patch/src/summaryview.c
+--- sylpheed/src/summaryview.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/summaryview.c	Wed Apr 11 00:24:01 2001
+@@ -2740,10 +2740,10 @@
+ 		compose_reply(msginfo, FALSE, TRUE);
+ 		break;
+ 	case COMPOSE_FORWARD:
+-		compose_forward(msginfo, FALSE);
++		compose_forward(msginfo, prefs_common.forward_with_quote, FALSE);
+ 		break;
+ 	case COMPOSE_FORWARD_AS_ATTACH:
+-		compose_forward(msginfo, TRUE);
++		compose_forward(msginfo, prefs_common.forward_with_quote, TRUE);
+ 		break;
+ 	default:
+ 		compose_reply(msginfo, prefs_common.reply_with_quote, FALSE);
