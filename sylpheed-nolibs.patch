@@ -1,0 +1,13 @@
+--- sylpheed-0.9.8a/configure.in.orig	Sun Feb  1 11:18:24 2004
++++ sylpheed-0.9.8a/configure.in	Sun Feb  1 11:25:26 2004
+@@ -135,8 +135,8 @@
+ 
+ 	dnl check for available libraries, and pull them in
+ 	AC_CHECK_LIB(resolv, res_query, LDAP_LIBS="$LDAP_LIBS -lresolv")
+-	AC_CHECK_LIB(socket, bind, LDAP_LIBS="$LDAP_LIBS -lsocket")
+-	AC_CHECK_LIB(nsl, gethostbyaddr, LDAP_LIBS="$LDAP_LIBS -lnsl")
++	AC_CHECK_FUNC(bind,,[AC_CHECK_LIB(socket, bind, LDAP_LIBS="$LDAP_LIBS -lsocket")])
++	AC_CHECK_FUNC(gethostbyaddr,,[AC_CHECK_LIB(nsl, gethostbyaddr, LDAP_LIBS="$LDAP_LIBS -lnsl")])
+ 	AC_CHECK_LIB(lber, ber_get_tag, LDAP_LIBS="$LDAP_LIBS -llber",,
+ 		     $LDAP_LIBS)
+ 
