@@ -1,42 +1,45 @@
 #
+# maybe TODO: jpilot (libpisock)
+#
 # Conditional build:
-%bcond_without jconv		# without jconv support
-%bcond_without gpg		# without gpg support
-%bcond_without ssl		# without ssl support
-%bcond_without ipv6		# without ipv6 support
-%bcond_without ldap		# without ldap support
-%bcond_without faces		# without compfaces support
+%bcond_without	gpg		# without gpg support [disabled by ac_fixes patch?]
+%bcond_without	ssl		# without ssl support
+%bcond_without	ipv6		# without ipv6 support
+%bcond_without	ldap		# without ldap support
+%bcond_without	faces		# without compfaces support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	0.9.8a
-Release:	0.1
+Version:	0.9.10
+Release:	3
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
-# Source0-md5:	6ac823f06d8fe4f265f37d9c96068e05
+# Source0-md5:	4e2242436de3cf3977a1b25b1ddc4930
 Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
-BuildRequires:	autoconf
+Patch3:		%{name}-nolibs.patch
+BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 %{?with_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
 BuildRequires:	gtk+-devel >= 1.2.6
-%{?with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7c}
+%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.6m}
 %{?with_ldap:BuildRequires:	openldap-devel}
-%{?with_gpg:BuildConflicts:	gpgme-devel >= 4.0}
 %{?with_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	sylpheed-claws
+
+%define		_prefix		/usr/X11R6
+%define		_desktopdir	%{_applnkdir}/Network/Mail
 
 %description
 This program is an X based fast e-mail client which has features (or
@@ -80,16 +83,20 @@ recursos como:
 %patch0 -p1
 %patch1 -p1
 %patch2 -p0
+%patch3 -p1
+
+mv -f po/{sr,sr@Latn}.po
+mv -f po/{zh_TW.Big5,zh_TW}.po
+
+%{__perl} -pi -e 's/ sr / sr\@Latn /;s/zh_TW\.Big5/zh_TW/' configure.in
 
 %build
-rm -f missing
 %{__libtoolize}
 %{__gettextize}
-%{__aclocal}
+%{__aclocal} -I ac
 %{__autoconf}
 %{__automake}
 %configure \
-	--%{?with_jconv:en}%{!?with_jconv:dis}able-jconv \
 	--enable-gdk-pixbuf \
 	--enable-threads \
 	%{?with_faces:--disable-compfaces} \
