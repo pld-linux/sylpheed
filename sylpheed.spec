@@ -6,7 +6,7 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	0.8.8
+Version:	0.8.9
 Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
@@ -28,7 +28,6 @@ Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	sylpheed-claws
-
 
 %description
 This program is an X based fast e-mail client which has features (or
