@@ -27,20 +27,20 @@ BuildRequires:	automake
 %{!?_without_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
-BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
+%{!?_with_gtk2:	BuildRequires:	gtk+-devel >= 1.2.6}
 %{?_with_gtk2:BuildRequires:	gtk+2-devel}
 %{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 %{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
-%{!?_without_ldap:BuildRequires:        openldap-devel}
+%{!?_without_ldap:BuildRequires:	openldap-devel}
 %{!?_without_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
-BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Conflicts:	gpgme-devel >= 4.0
 Obsoletes:	sylpheed-claws
+BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 This program is an X based fast e-mail client which has features (or
@@ -85,6 +85,7 @@ recursos como:
 %patch1 -p1
 %patch2 -p0
 %{?_with_gtk2:%patch3 -p1}
+%{?_with_gtk2:mv -f aclocal.m4 acinclude.m4}
 
 %build
 rm -f missing
@@ -113,7 +114,8 @@ rm -f missing
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%{__make} install DESTDIR=$RPM_BUILD_ROOT
+%{__make} install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 
