@@ -35,6 +35,9 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Conflicts:	gpgme-devel >= 4.0
 Obsoletes:	sylpheed-claws
 
+%define		_prefix		/usr/X11R6
+%define		_desktopdir	%{_prefix}/share/applications
+
 %description
 This program is an X based fast e-mail client which has features (or
 go for it :-)) like:
