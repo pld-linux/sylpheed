@@ -31,11 +31,11 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	libtool
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7c}
 %{?with_ldap:BuildRequires:	openldap-devel}
+%{?with_gpg:BuildConflicts:	gpgme-devel >= 4.0}
 %{?with_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-%{?with_gpg:Conflicts:	gpgme-devel >= 4.0}
 Obsoletes:	sylpheed-claws
 
 %description
