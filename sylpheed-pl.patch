@@ -1,0 +1,12 @@
+diff -ru sylpheed-0.7.0/po/pl.po sylpheed-0.7.0-AX/po/pl.po
+--- sylpheed-0.7.0/po/pl.po	Mon Jan  7 09:46:19 2002
++++ sylpheed-0.7.0-AX/po/pl.po	Thu Feb  7 21:18:20 2002
+@@ -4647,7 +4647,7 @@
+ #: src/send.c:408 src/send.c:472
+ #, c-format
+ msgid "Sending message (%d / %d bytes)"
+-msgstr "Wysy³anie wiadomo¶ci (%d / %d) (%d / %d bajtów)"
++msgstr "Wysy³anie wiadomo¶ci (%d / %d bajtów)"
+ 
+ #: src/send.c:501
+ #, c-format
