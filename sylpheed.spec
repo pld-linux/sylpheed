@@ -108,7 +108,8 @@ rm -f missing
 
 %{__make}
 
-%{?_with_gtk2: /bin/sh po/poconv.sh}
+
+%{?_with_gtk2:cd po;/bin/sh po/poconv.sh}
 
 %install
 rm -rf $RPM_BUILD_ROOT
