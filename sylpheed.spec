@@ -3,34 +3,26 @@
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
-Version:	0.5.3
-Release:	3
+Version:	0.6.0
+Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
 Group(de):	X11/Applikationen/Netzwerkwesen
 Group(pl):	X11/Aplikacje/Sieciowe
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
-Patch0:		%{name}-gtkhtml.patch
-Patch1:		%{name}-open-url.patch
-Patch2:		%{name}-fix-compose-cmdline.patch
-Patch3:		%{name}-forward.patch
-Patch4:	%{name}-0.5.3-crashfix.patch
-Patch5:	%{name}-0.5.3-summaryfix.patch
-Patch6:	%{name}-0.5.3-updateopt.patch
-
+Patch0:		%{name}-open-url.patch
+Patch1:		%{name}-fix-compose-cmdline.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
+BuildRequires:	faces-devel
 BuildRequires:	gettext-devel
-BuildRequires:	gal-devel >= 0.9
+BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
-BuildRequires:	glib-devel
 BuildRequires:	gtkhtml-devel >= 0.10.1
 %{?_with_jconv:BuildRequires:	libjconv-devel}
-BuildRequires:	imlib-devel
 BuildRequires:	libtool
-BuildRequires:  faces-devel
-Requires:      faces
+Requires:	faces
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -55,15 +47,10 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
-%patch2 -p0
-%patch3 -p1
-%patch4 -p0
-%patch5 -p0
-%patch6 -p0
+%patch1 -p0
 
 %build
-rm missing
+rm -f missing
 libtoolize --copy --force
 gettextize --copy --force 
 aclocal -I ac
@@ -71,7 +58,7 @@ autoconf
 autoheader
 automake --add-missing --foreign --copy
 %configure \
-%{!?_with_jconv:	--disable-jconv} \
+	%{!?_with_jconv:--disable-jconv} \
 	--enable-threads \
 	--enable-ipv6
 
