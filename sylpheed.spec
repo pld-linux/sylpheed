@@ -5,7 +5,7 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
 Version:	0.7.2
-Release:	2
+Release:	3
 License:	GPL
 Group:		X11/Applications/Networking
 Group(cs):	X11/Aplikace/SÌªovÈ
@@ -25,6 +25,7 @@ Group(sv):	X11/Till‰mpningar/N‰tverk
 Group(uk):	X11/“…ÀÃ¡ƒŒ¶ “œ«“¡Õ…/Ì≈“≈÷¡
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
+Source2:	%{name}.png
 Patch0:		%{name}-tmpdir.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -93,12 +94,13 @@ automake --add-missing --foreign --copy
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d  $RPM_BUILD_ROOT%{_applnkdir}/Network/Mail
+install -d $RPM_BUILD_ROOT{%{_applnkdir}/Network/Mail,%{_pixmapsdir}}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_applnkdir}/Network/Mail
+install %{SOURCE2} $RPM_BUILD_ROOT%{_pixmapsdir}
 
 gzip -9nf AUTHORS ChangeLog NEWS README TODO
 
@@ -116,3 +118,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}/manual/en
 %lang(ja) %{_datadir}/%{name}/manual/ja
 %{_applnkdir}/Network/Mail/*
+%{_pixmapsdir}/sylpheed.png
