@@ -1,0 +1,4227 @@
+diff -Naur ./acconfig.h ../sylpheed-0.4.66adr/acconfig.h
+--- ./acconfig.h	Tue Apr 24 22:49:21 2001
++++ ../sylpheed-0.4.66adr/acconfig.h	Wed May  9 15:23:11 2001
+@@ -13,6 +13,9 @@
+ /* Define if you want IPv6 support.  */
+ #undef INET6
+ 
++/* Define if you want JPilot support in addressbook.  */
++#undef USE_JPILOT
++
+ /* Define if we use GPGME to support OpenPGP */
+ #undef USE_GPGME
+ 
+diff -Naur ./configure.in ../sylpheed-0.4.66adr/configure.in
+--- ./configure.in	Mon May  7 23:10:27 2001
++++ ../sylpheed-0.4.66adr/configure.in	Wed May  9 15:23:22 2001
+@@ -98,6 +98,20 @@
+ 	AC_CHECK_LIB(compface, uncompface)
+ fi
+ 
++dnl for JPilot support in addressbook
++AC_ARG_ENABLE(jpilot,
++	[  --enable-jpilot         Enable JPilot support [default=no]],
++	[ac_cv_enable_jpilot=$enableval], [ac_cv_enable_jpilot=no])
++
++AC_MSG_CHECKING([whether to use jpilot])
++if test "$ac_cv_enable_jpilot" = yes; then
++	AC_MSG_RESULT(yes)
++	LIBS="$LIBS -lpisock"
++	AC_DEFINE(USE_JPILOT)
++else
++	AC_MSG_RESULT(no)
++fi
++
+ dnl Check for libjconv
+ AC_ARG_ENABLE(jconv,
+ 	[  --disable-jconv         Do not use libjconv],
+diff -Naur ./src/Makefile.am ../sylpheed-0.4.66adr/src/Makefile.am
+--- ./src/Makefile.am	Sun May  6 19:51:03 2001
++++ ../sylpheed-0.4.66adr/src/Makefile.am	Wed May  9 15:54:09 2001
+@@ -74,7 +74,13 @@
+ 	sigstatus.c sigstatus.h \
+ 	simple-gettext.c \
+ 	manual.c manual.h \
+-	addr_compl.c addr_compl.h
++	addr_compl.c addr_compl.h \
++	addressitem.h \
++	mgutils.c mgutils.h \
++	vcard.c vcard.h \
++	jpilot.c jpilot.h \
++	editvcard.c editvcard.h \
++	editjpilot.c editjpilot.h
+ 
+ EXTRA_DIST = \
+ 	pixmaps/clip.xpm \
+diff -Naur ./src/addressbook.c ../sylpheed-0.4.66adr/src/addressbook.c
+--- ./src/addressbook.c	Fri Apr 20 04:31:39 2001
++++ ../sylpheed-0.4.66adr/src/addressbook.c	Wed May  9 16:00:10 2001
+@@ -60,6 +60,15 @@
+ #include "about.h"
+ #include "addr_compl.h"
+ 
++#include "addressitem.h"
++#include "vcard.h"
++#include "editvcard.h"
++
++#ifdef USE_JPILOT
++#include "jpilot.h"
++#include "editjpilot.h"
++#endif
++
+ #include "pixmaps/dir-close.xpm"
+ #include "pixmaps/dir-open.xpm"
+ #include "pixmaps/group.xpm"
+@@ -73,7 +82,7 @@
+ 
+ #define N_COLS	3
+ #define COL_NAME_WIDTH		144
+-#define COL_ADDRESS_WIDTH	144
++#define COL_ADDRESS_WIDTH	156
+ 
+ #define COL_FOLDER_WIDTH	170
+ #define ADDRESSBOOK_WIDTH	640
+@@ -86,6 +95,9 @@
+ static GdkPixmap *groupxpm;
+ static GdkBitmap *groupxpmmask;
+ 
++// Pilot library indicator (set at run-time)
++static _have_pilot_library_;
++
+ static AddressBook addrbook;
+ 
+ static struct _AddressEdit
+@@ -162,7 +174,7 @@
+ 						 gboolean	*cancelled);
+ static gint edit_address_delete_event		(GtkWidget	*widget,
+ 						 GdkEventAny	*event,
+-						 gboolean *cancelled);
++						 gboolean	*cancelled);
+ static void edit_address_key_pressed		(GtkWidget	*widget,
+ 						 GdkEventKey	*event,
+ 						 gboolean	*cancelled);
+@@ -182,6 +194,18 @@
+ 						 guint		 action,
+ 						 GtkWidget	*widget);
+ 
++// VCard edit stuff
++static void addressbook_new_vcard_cb		( gpointer	data,
++	       					  guint		action,
++						  GtkWidget	*widget );
++
++#ifdef USE_JPILOT
++// JPilot edit stuff
++static void addressbook_new_jpilot_cb		( gpointer	data,
++	       					  guint		action,
++						  GtkWidget	*widget );
++#endif
++
+ static AddressItem *addressbook_parse_address	(const gchar	*str);
+ static void addressbook_append_to_compose_entry	(AddressItem	*item,
+ 						 ComposeEntryType type);
+@@ -224,12 +248,28 @@
+ static gint addressbook_obj_name_compare	(gconstpointer	 a,
+ 						 gconstpointer	 b);
+ 
++static AddressVCard *addressbook_parse_vcard	( XMLFile	*file );
++static void addressbook_write_vcard		( FILE		*fp,
++						AddressVCard	*vcard,
++						guint		level );
++
++#ifdef USE_JPILOT
++static AddressJPilot *addressbook_parse_jpilot	( XMLFile	*file );
++static void addressbook_write_jpilot		( FILE		*fp,
++	       					AddressJPilot	*jpilot,
++					       	guint		level );
++#endif
++
+ static GtkItemFactoryEntry addressbook_entries[] =
+ {
+ 	{N_("/_File"),			NULL, NULL, 0, "<Branch>"},
+ 	{N_("/_File/New _address"),	"<alt>N", addressbook_new_address_cb, 0, NULL},
+ 	{N_("/_File/New _group"),	"<alt>G", addressbook_new_group_cb,   0, NULL},
+ 	{N_("/_File/New _folder"),	"<alt>R", addressbook_new_folder_cb,  0, NULL},
++	{N_("/_File/New _VCard"),	"<alt>D", addressbook_new_vcard_cb,  0, NULL},
++#ifdef USE_JPILOT
++	{N_("/_File/New _JPilot"),	"<alt>J", addressbook_new_jpilot_cb,  0, NULL},
++#endif
+ 	{N_("/_File/---"),		NULL, NULL, 0, "<Separator>"},
+ 	{N_("/_File/_Edit"),		"<alt>Return", addressbook_edit_address_cb, 0, NULL},
+ 	{N_("/_File/_Delete"),		NULL, addressbook_delete_address_cb, 0, NULL},
+@@ -244,6 +284,10 @@
+ 	{N_("/New _address"),	NULL, addressbook_new_address_cb, 0, NULL},
+ 	{N_("/New _group"),	NULL, addressbook_new_group_cb,   0, NULL},
+ 	{N_("/New _folder"),	NULL, addressbook_new_folder_cb,  0, NULL},
++	{N_("/New _VCard"),	NULL, addressbook_new_vcard_cb,   0, NULL},
++#ifdef USE_JPILOT
++	{N_("/New _JPilot"),	NULL, addressbook_new_jpilot_cb,  0, NULL},
++#endif
+ 	{N_("/---"),		NULL, NULL, 0, "<Separator>"},
+ 	{N_("/_Edit"),		NULL, addressbook_edit_folder_cb,   0, NULL},
+ 	{N_("/_Delete"),	NULL, addressbook_delete_folder_cb, 0, NULL}
+@@ -313,6 +357,7 @@
+ 	GtkWidget *list_popup;
+ 	GtkItemFactory *tree_factory;
+ 	GtkItemFactory *list_factory;
++	GtkItemFactory *menu_factory;
+ 	gint n_entries;
+ 
+ 	gchar *titles[N_COLS] = {_("Name"), _("E-Mail address"), _("Remarks")};
+@@ -321,6 +366,9 @@
+ 
+ 	debug_print("Creating addressbook window...\n");
+ 
++	// Global flag if we have library installed (at run-time)
++	_have_pilot_library_ = FALSE;
++
+ 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+ 	gtk_window_set_title(GTK_WINDOW(window), _("Address book"));
+ 	gtk_widget_set_usize(window, ADDRESSBOOK_WIDTH, ADDRESSBOOK_HEIGHT);
+@@ -345,6 +393,7 @@
+ 	menubar = menubar_create(window, addressbook_entries, n_entries,
+ 				 "<AddressBook>", NULL);
+ 	gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
++	menu_factory = gtk_item_factory_from_widget(menubar);
+ 
+ 	vbox2 = gtk_vbox_new(FALSE, 4);
+ 	gtk_container_set_border_width(GTK_CONTAINER(vbox2), BORDER_WIDTH);
+@@ -491,6 +540,31 @@
+ 				      folderopenxpm, folderopenxpmmask,
+ 				      FALSE, FALSE);
+ 
++	text = _("VCard");
++	addrbook.vcard =
++		gtk_ctree_insert_node(GTK_CTREE(ctree),
++				      NULL, NULL, &text, FOLDER_SPACING,
++				      folderxpm, folderxpmmask,
++				      folderopenxpm, folderopenxpmmask,
++				      FALSE, FALSE);
++
++#ifdef USE_JPILOT
++	text = _("JPllot");
++	addrbook.jpilot =
++		gtk_ctree_insert_node(GTK_CTREE(ctree),
++				      NULL, NULL, &text, FOLDER_SPACING,
++				      folderxpm, folderxpmmask,
++				      folderopenxpm, folderopenxpmmask,
++				      FALSE, FALSE);
++	if( jpilot_test_pilot_lib() ) {
++		_have_pilot_library_ = TRUE;
++		menu_set_sensitive( menu_factory, "/File/New JPilot", TRUE );
++	}
++	else {
++		menu_set_sensitive( menu_factory, "/File/New JPilot", FALSE );
++	}
++#endif
++
+ 	/* popup menu */
+ 	n_entries = sizeof(addressbook_tree_popup_entries) /
+ 		sizeof(addressbook_tree_popup_entries[0]);
+@@ -507,10 +581,11 @@
+ 				       "<AddressBookList>", &list_factory,
+ 				       NULL);
+ 
+-	addrbook.window = window;
+-	addrbook.ctree  = ctree;
+-	addrbook.clist  = clist;
+-	addrbook.entry  = entry;
++	addrbook.window  = window;
++	addrbook.menubar = menubar;
++	addrbook.ctree   = ctree;
++	addrbook.clist   = clist;
++	addrbook.entry   = entry;
+ 
+ 	addrbook.del_btn = del_btn;
+ 	addrbook.reg_btn = reg_btn;
+@@ -523,6 +598,7 @@
+ 	addrbook.list_popup   = list_popup;
+ 	addrbook.tree_factory = tree_factory;
+ 	addrbook.list_factory = list_factory;
++	addrbook.menu_factory = menu_factory;
+ 
+ 	address_completion_start(window);
+ 
+@@ -751,25 +827,101 @@
+ 		compose_entry_append(compose, item->address, type);
+ }
+ 
++static void addressbook_menubar_set_sensitive( gboolean sensitive ) {
++	menu_set_sensitive( addrbook.menu_factory, "/File/New address", sensitive );
++	menu_set_sensitive( addrbook.menu_factory, "/File/New group",   sensitive );
++	menu_set_sensitive( addrbook.menu_factory, "/File/New folder",  sensitive );
++	menu_set_sensitive( addrbook.menu_factory, "/File/New VCard",   sensitive );
++#ifdef USE_JPILOT
++	menu_set_sensitive( addrbook.menu_factory, "/File/New JPilot",  sensitive );
++#endif
++}
++
++static void addressbook_menuitem_set_sensitive( AddressObject *obj, GtkCTreeNode *node ) {
++	gboolean canEdit = TRUE;
++	if( obj->type == ADDR_FOLDER ) {
++		if( node == addrbook.common ) {
++			canEdit = FALSE;
++		}
++		if( node == addrbook.personal ) {
++			canEdit = FALSE;
++		}
++		if( node == addrbook.vcard ) {
++			canEdit = FALSE;
++			menu_set_sensitive( addrbook.menu_factory, "/File/New VCard", TRUE );
++		}
++#ifdef USE_JPILOT
++		else if( node == addrbook.jpilot ) {
++			canEdit = FALSE;
++			if( _have_pilot_library_ ) {
++				menu_set_sensitive( addrbook.menu_factory, "/File/New JPilot", TRUE );
++			}
++		}
++#endif
++		else {
++			menu_set_sensitive( addrbook.menu_factory, "/File/New address", TRUE );
++			menu_set_sensitive( addrbook.menu_factory, "/File/New group",   TRUE );
++			menu_set_sensitive( addrbook.menu_factory, "/File/New folder",  TRUE );
++		}
++	}
++	else if( obj->type == ADDR_GROUP ) {
++		menu_set_sensitive( addrbook.menu_factory, "/File/New address", TRUE );
++	}
++#ifdef USE_JPILOT
++	else if( obj->type == ADDR_JPILOT ) {
++		if( ! _have_pilot_library_ ) canEdit = FALSE;
++	}
++#endif
++	menu_set_sensitive( addrbook.menu_factory, "/File/Edit",    canEdit );
++	menu_set_sensitive( addrbook.menu_factory, "/File/Delete",  canEdit );
++}
++
+ static void addressbook_tree_selected(GtkCTree *ctree, GtkCTreeNode *node,
+ 				      gint column, gpointer data)
+ {
+ 	AddressObject *obj;
+ 
+ 	addrbook.selected = node;
+-
+-	if (!addrbook.open_folder) return;
+ 	addrbook.open_folder = FALSE;
+ 
+-	gtk_entry_set_text(GTK_ENTRY(addrbook.entry), "");
++	if( addrbook.entry != NULL ) {
++		gtk_entry_set_text(GTK_ENTRY(addrbook.entry), "");
++	}
+ 
+ 	obj = gtk_ctree_node_get_row_data(ctree, node);
+-	g_return_if_fail(obj != NULL);
++	if( obj == NULL ) return;
+ 
+ 	addrbook.opened = node;
+ 
+-	if (obj->type == ADDR_GROUP || obj->type == ADDR_FOLDER)
++	if(	obj->type == ADDR_GROUP || obj->type == ADDR_FOLDER ||
++		obj->type == ADDR_VCARD || obj->type == ADDR_JPILOT )
+ 		addressbook_set_clist(obj);
++
++
++	if( obj->type == ADDR_VCARD ) {
++		// Read from cache
++		VCardFile *vcf;
++		vcf = ADDRESS_VCARD(obj)->cardFile;
++		vcard_read_file( vcf );
++		ADDRESS_VCARD(obj)->items = vcard_get_address_list( vcf );
++		addressbook_set_clist( obj );
++	}
++#ifdef USE_JPILOT
++	else if( obj->type == ADDR_JPILOT ) {
++		if( _have_pilot_library_ ) {
++			// Read from cache
++			JPilotFile *jpf;
++			jpf = ADDRESS_JPILOT(obj)->pilotFile;
++			jpilot_read_file( jpf );
++			ADDRESS_JPILOT(obj)->items = jpilot_get_address_list( jpf );
++			addressbook_set_clist( obj );
++		}
++	}
++#endif
++
++	// Setup main menu selections
++	addressbook_menubar_set_sensitive( FALSE );
++	addressbook_menuitem_set_sensitive( obj, node );
+ }
+ 
+ static void addressbook_list_selected(GtkCList *clist, gint row, gint column,
+@@ -877,6 +1029,7 @@
+ {
+ 	GtkCList *clist = GTK_CLIST(widget);
+ 	gint row, column;
++	gint tRow, tCol;
+ 	AddressObject *obj;
+ 
+ 	if (!event) return;
+@@ -899,16 +1052,21 @@
+ 		}
+ 		gtkut_clist_set_focus_row(clist, row);
+ 
+-		menu_set_sensitive(addrbook.list_factory, "/Edit", TRUE);
+-		menu_set_sensitive(addrbook.list_factory, "/Delete", TRUE);
++		if( obj->type != ADDR_VCARD && obj->type != ADDR_JPILOT ) {
++			menu_set_sensitive(addrbook.list_factory, "/Edit", TRUE);
++			menu_set_sensitive(addrbook.list_factory, "/Delete", TRUE);
++		}
+ 	}
+ 
+-	menu_set_sensitive(addrbook.list_factory, "/New address", TRUE);
+-	if (obj->type == ADDR_FOLDER) {
+-		menu_set_sensitive(addrbook.list_factory, "/New folder", TRUE);
+-		menu_set_sensitive(addrbook.list_factory, "/New group", TRUE);
++	if( !( addrbook.opened == addrbook.vcard || addrbook.opened == addrbook.jpilot ) ) {
++		if( obj->type == ADDR_FOLDER || obj->type == ADDR_GROUP ) {
++			menu_set_sensitive(addrbook.list_factory, "/New address", TRUE);
++		}
++		if (obj->type == ADDR_FOLDER) {
++			menu_set_sensitive(addrbook.list_factory, "/New folder", TRUE);
++			menu_set_sensitive(addrbook.list_factory, "/New group", TRUE);
++		}
+ 	}
+-
+ 	gtk_menu_popup(GTK_MENU(addrbook.list_popup), NULL, NULL, NULL, NULL,
+ 		       event->button, event->time);
+ }
+@@ -927,6 +1085,9 @@
+ 	gint row, column;
+ 	AddressObject *obj;
+ 	GtkCTreeNode *node;
++#ifdef USE_JPILOT
++	JPilotFile *jpf;
++#endif
+ 
+ 	if (!event) return;
+ 	if (event->button == 1) {
+@@ -946,22 +1107,52 @@
+ 
+ 	if (obj->type == ADDR_FOLDER) {
+ 		node = gtk_ctree_node_nth(GTK_CTREE(ctree), row);
+-		menu_set_sensitive(addrbook.tree_factory, "/New folder", TRUE);
+-		menu_set_sensitive(addrbook.tree_factory, "/New group", TRUE);
+-		if (node && GTK_CTREE_ROW(node)->level >= 2) {
+-			menu_set_sensitive(addrbook.tree_factory,
+-					   "/Edit", TRUE);
+-			menu_set_sensitive(addrbook.tree_factory,
+-					   "/Delete", TRUE);
++		if( node == addrbook.vcard ) {
++			menu_set_sensitive(addrbook.tree_factory, "/New VCard", TRUE);
+ 		}
+-	} else if (obj->type == ADDR_GROUP) {
++#ifdef USE_JPILOT
++		else if( node == addrbook.jpilot ) {
++			if( _have_pilot_library_ ) {
++				menu_set_sensitive(addrbook.tree_factory, "/New JPilot", TRUE);
++			}
++		}
++#endif
++		else {
++			menu_set_sensitive(addrbook.tree_factory, "/New address", TRUE);
++			menu_set_sensitive(addrbook.tree_factory, "/New folder", TRUE);
++			menu_set_sensitive(addrbook.tree_factory, "/New group", TRUE);
++			if (node && GTK_CTREE_ROW(node)->level >= 2) {
++				menu_set_sensitive(addrbook.tree_factory, "/Edit", TRUE);
++				menu_set_sensitive(addrbook.tree_factory, "/Delete", TRUE);
++			}
++		}
++	}
++	else if (obj->type == ADDR_GROUP) {
++		menu_set_sensitive(addrbook.tree_factory, "/New address", TRUE);
+ 		menu_set_sensitive(addrbook.tree_factory, "/Edit", TRUE);
+ 		menu_set_sensitive(addrbook.tree_factory, "/Delete", TRUE);
+-	} else
++	}
++	else if (obj->type == ADDR_VCARD) {
++		menu_set_sensitive(addrbook.tree_factory, "/Edit", TRUE);
++		menu_set_sensitive(addrbook.tree_factory, "/Delete", TRUE);
++	}
++#ifdef USE_JPILOT
++	else if (obj->type == ADDR_JPILOT) {
++		if( _have_pilot_library_ ) {
++			menu_set_sensitive(addrbook.tree_factory, "/Edit", TRUE);
++			menu_set_sensitive(addrbook.tree_factory, "/Delete", TRUE);
++
++			/* Ensure that we have read the file */
++			jpf = ADDRESS_JPILOT(obj)->pilotFile;
++			jpilot_read_file( jpf );
++			ADDRESS_JPILOT(obj)->items = jpilot_get_address_list( jpf );
++			addressbook_set_clist( obj );
++		}
++	}
++#endif
++	else {
+ 		return;
+-
+-	menu_set_sensitive(addrbook.tree_factory, "/New address", TRUE);
+-
++	}
+ 	gtk_menu_popup(GTK_MENU(addrbook.tree_popup), NULL, NULL, NULL, NULL,
+ 		       event->button, event->time);
+ }
+@@ -1162,13 +1353,40 @@
+ 
+ 	obj = gtk_ctree_node_get_row_data(ctree, addrbook.selected);
+ 	g_return_if_fail(obj != NULL);
+-	g_return_if_fail(obj->type == ADDR_FOLDER || obj->type == ADDR_GROUP);
++	g_return_if_fail(obj->type == ADDR_FOLDER || obj->type == ADDR_GROUP || obj->type == ADDR_VCARD || obj->type == ADDR_JPILOT );
+ 
+ 	if (obj->type == ADDR_GROUP) {
+ 		addressbook_edit_group(addrbook.selected);
+ 		return;
+ 	}
+ 
++	if( obj->type == ADDR_VCARD ) {
++                AddressVCard *vcard = ADDRESS_VCARD(obj);
++		GtkCTreeNode *node;
++                if( addressbook_edit_vcard( vcard ) == NULL ) return;
++		node = gtk_ctree_find_by_row_data( ctree, addrbook.selected, obj );
++		addressbook_change_node_name( node, vcard->name );
++		gtk_ctree_sort_node(ctree, GTK_CTREE_ROW(addrbook.selected)->parent);
++                addrbook.open_folder = TRUE;
++                gtk_ctree_select( GTK_CTREE(addrbook.ctree), addrbook.selected );
++		addressbook_tree_selected( ctree, node, 0, NULL );
++                return;
++	}
++#ifdef USE_JPILOT
++	if( obj->type == ADDR_JPILOT ) {
++                AddressJPilot *jpilot = ADDRESS_JPILOT(obj);
++		GtkCTreeNode *node;
++		if( ! _have_pilot_library_ ) return;
++                if( addressbook_edit_jpilot( jpilot ) == NULL ) return;
++		node = gtk_ctree_find_by_row_data( ctree, addrbook.selected, obj );
++		addressbook_change_node_name( node, jpilot->name );
++		gtk_ctree_sort_node(ctree, GTK_CTREE_ROW(addrbook.selected)->parent);
++                addrbook.open_folder = TRUE;
++                gtk_ctree_select( GTK_CTREE(addrbook.ctree), addrbook.selected );
++                return;
++	}
++#endif
++
+ 	folder = ADDRESS_FOLDER(obj);
+ 	new_name = input_dialog(_("Edit folder"),
+ 				_("Input the new name of folder:"),
+@@ -1217,6 +1435,14 @@
+ 		name = ADDRESS_GROUP(obj)->name;
+ 	else if (obj->type == ADDR_FOLDER)
+ 		name = ADDRESS_FOLDER(obj)->name;
++	else if (obj->type == ADDR_VCARD)
++		name = ADDRESS_VCARD(obj)->name;
++#ifdef USE_JPILOT
++	else if (obj->type == ADDR_JPILOT) {
++		if( ! _have_pilot_library_ ) return;
++		name = ADDRESS_JPILOT(obj)->name;
++	}
++#endif
+ 	else
+ 		return;
+ 
+@@ -1475,8 +1701,15 @@
+ 
+ 	if (obj->type == ADDR_GROUP)
+ 		items = ADDRESS_GROUP(obj)->items;
+-	else if (obj->type == ADDR_FOLDER)
++	else if (obj->type == ADDR_FOLDER) {
+ 		items = ADDRESS_FOLDER(obj)->items;
++	}
++	else if (obj->type == ADDR_VCARD)
++		items = ADDRESS_VCARD(obj)->items;
++#ifdef USE_JPILOT
++	else if (obj->type == ADDR_JPILOT)
++		items = ADDRESS_JPILOT(obj)->items;
++#endif
+ 	else {
+ 		gtk_clist_thaw(clist);
+ 		return;
+@@ -1485,9 +1718,7 @@
+ 	for (; items != NULL; items = items->next) {
+ 		AddressObject *iobj;
+ 		gint row;
+-
+ 		iobj = ADDRESS_OBJECT(items->data);
+-
+ 		if (iobj->type == ADDR_GROUP) {
+ 			AddressGroup *group;
+ 
+@@ -1529,6 +1760,10 @@
+ 		g_free(path);
+ 		addressbook_get_tree(NULL, addrbook.common, "common_address");
+ 		addressbook_get_tree(NULL, addrbook.personal, "personal_address");
++		addressbook_get_tree(NULL, addrbook.vcard, "vcard_list");
++#ifdef USE_JPILOT
++		addressbook_get_tree(NULL, addrbook.jpilot, "jpilot_list");
++#endif
+ 		return;
+ 	}
+ 	g_free(path);
+@@ -1544,6 +1779,10 @@
+ 
+ 	addressbook_get_tree(file, addrbook.common, "common_address");
+ 	addressbook_get_tree(file, addrbook.personal, "personal_address");
++	addressbook_get_tree(file, addrbook.vcard, "vcard_list");
++#ifdef USE_JPILOT
++	addressbook_get_tree(file, addrbook.jpilot, "jpilot_list");
++#endif
+ 
+ 	xml_close_file(file);
+ 
+@@ -1617,7 +1856,24 @@
+ 				(node, ADDRESS_OBJECT(folder));
+ 
+ 			addressbook_add_objs(file, new_node);
+-		} else if (xml_compare_tag(file, "item")) {
++		}
++		else if( xml_compare_tag( file, "vcard" ) ) {
++			AddressVCard *vcard;
++			vcard = addressbook_parse_vcard( file );
++			if( ! vcard ) return;
++			new_node = addressbook_add_object
++				(node, ADDRESS_OBJECT(vcard));
++		}
++#ifdef USE_JPILOT
++		else if( xml_compare_tag( file, "jpilot" ) ) {
++			AddressJPilot *jpilot;
++			jpilot = addressbook_parse_jpilot( file );
++			if( ! jpilot ) return;
++			new_node = addressbook_add_object
++				(node, ADDRESS_OBJECT(jpilot));
++		}
++#endif
++		else if (xml_compare_tag(file, "item")) {
+ 			AddressItem *item;
+ 
+ 			item = addressbook_parse_item(file);
+@@ -1653,6 +1909,12 @@
+ 	    (obj->type == ADDR_GROUP || obj->type == ADDR_FOLDER))
+ 		gtk_ctree_expand(ctree, node);
+ 
++	if (pobj->type == ADDR_FOLDER && obj->type == ADDR_VCARD )
++		gtk_ctree_expand(ctree, node);
++
++	if (pobj->type == ADDR_FOLDER && obj->type == ADDR_JPILOT )
++		gtk_ctree_expand(ctree, node);
++
+ 	if (obj->type == ADDR_GROUP) {
+ 		AddressGroup *group = ADDRESS_GROUP(obj);
+ 
+@@ -1681,7 +1943,29 @@
+ 					      folderopenxpm, folderopenxpmmask,
+ 					      FALSE, FALSE);
+ 		gtk_ctree_node_set_row_data(ctree, added, obj);
+-	} else {
++
++	}
++	else if (obj->type == ADDR_VCARD) {
++		AddressVCard *vcard = ADDRESS_VCARD(obj);
++		added = gtk_ctree_insert_node(ctree, node, NULL,
++					      &vcard->name, FOLDER_SPACING,
++					      groupxpm, groupxpmmask,
++					      groupxpm, groupxpmmask,
++					      TRUE, FALSE);
++		gtk_ctree_node_set_row_data(ctree, added, obj);
++	}
++#ifdef USE_JPILOT
++	else if (obj->type == ADDR_JPILOT) {
++		AddressJPilot *jpilot = ADDRESS_JPILOT(obj);
++		added = gtk_ctree_insert_node(ctree, node, NULL,
++					      &jpilot->name, FOLDER_SPACING,
++					      groupxpm, groupxpmmask,
++					      groupxpm, groupxpmmask,
++					      TRUE, FALSE);
++		gtk_ctree_node_set_row_data(ctree, added, obj);
++	}
++#endif
++       	else {
+ 		added = node;
+ 	}
+ 
+@@ -1736,6 +2020,24 @@
+ 		}
+ 		g_free(folder);
+ 	}
++	else if( obj->type == ADDR_VCARD ) {
++		AddressVCard *vcard = ADDRESS_VCARD(obj);
++		g_free( vcard->name );
++		vcard_free( vcard->cardFile );
++		vcard->cardFile = NULL;
++		vcard->items = NULL;
++		g_free( vcard );
++	}
++#ifdef USE_JPILOT
++	else if( obj->type == ADDR_JPILOT ) {
++		AddressJPilot *jpilot = ADDRESS_JPILOT(obj);
++		g_free( jpilot->name );
++		jpilot_free( jpilot->pilotFile );
++		jpilot->pilotFile = NULL;
++		jpilot->items = NULL;
++		g_free( jpilot );
++	}
++#endif
+ }
+ 
+ static AddressObject *addressbook_find_object_by_name(GtkCTreeNode *node,
+@@ -1922,6 +2224,16 @@
+ 		tab_indent_out(fp, GTK_CTREE_ROW(node)->level - 1);
+ 		fputs("</group>\n", fp);
+ 	}
++	else if (obj->type == ADDR_VCARD) {
++		AddressVCard *vcard = ADDRESS_VCARD(obj);
++		addressbook_write_vcard( fp, vcard, GTK_CTREE_ROW(node)->level);
++	}
++#ifdef USE_JPILOT
++	else if (obj->type == ADDR_JPILOT) {
++		AddressJPilot *jpilot = ADDRESS_JPILOT(obj);
++		addressbook_write_jpilot( fp, jpilot, GTK_CTREE_ROW(node)->level);
++	}
++#endif
+ }
+ 
+ static void addressbook_write_items(FILE *fp, GList *items, guint level)
+@@ -1985,6 +2297,12 @@
+ 			name1 = ADDRESS_GROUP(obj1)->name;
+ 		else if (obj1->type == ADDR_FOLDER)
+ 			name1 = ADDRESS_FOLDER(obj1)->name;
++		else if (obj1->type == ADDR_VCARD)
++			name1 = ADDRESS_VCARD(obj1)->name;
++#ifdef USE_JPILOT
++		else if (obj1->type == ADDR_JPILOT)
++			name1 = ADDRESS_JPILOT(obj1)->name;
++#endif
+ 		else
+ 			name1 = NULL;
+ 	} else
+@@ -1997,6 +2315,12 @@
+ 			name2 = ADDRESS_GROUP(obj2)->name;
+ 		else if (obj2->type == ADDR_FOLDER)
+ 			name2 = ADDRESS_FOLDER(obj2)->name;
++		else if (obj2->type == ADDR_VCARD)
++			name2 = ADDRESS_VCARD(obj2)->name;
++#ifdef USE_JPILOT
++		else if (obj2->type == ADDR_JPILOT)
++			name2 = ADDRESS_JPILOT(obj2)->name;
++#endif
+ 		else
+ 			name2 = NULL;
+ 	} else
+@@ -2029,6 +2353,12 @@
+ 			return -1;
+ 		else
+ 			return strcasecmp(folder->name, name);
++	} else if (obj->type == ADDR_VCARD) {
++		AddressVCard *vcard = ADDRESS_VCARD(obj);
++		if (!vcard->name)
++			return -1;
++		else
++			return strcasecmp(vcard->name, name);
+ 	} else if (obj->type == ADDR_ITEM) {
+ 		AddressItem *item = ADDRESS_ITEM(obj);
+ 		if (!item->name)
+@@ -2038,3 +2368,175 @@
+ 	} else
+ 		return -1;
+ }
++
++static AddressVCard *addressbook_parse_vcard(XMLFile *file) {
++	AddressVCard *item = NULL;
++	VCardFile *vcf;
++	GList *attr;
++	gchar *name, *value;
++
++	vcf = vcard_create();
++	attr = xml_get_current_tag_attr( file );
++	while( attr ) {
++		name = ((XMLAttr *)attr->data)->name;
++		value = ((XMLAttr *)attr->data)->value;
++		if( strcmp( name, "name" ) == 0 ) {
++			vcard_set_name( vcf, value );
++		}
++		else if( strcmp( name, "file" ) == 0) {
++			vcard_set_file( vcf, value );
++		}
++		attr = g_list_next( attr );
++	}
++
++	// Move to next tag
++	if( xml_parse_next_tag( file ) >= 0 ) {
++		if( vcard_validate( vcf ) ) {
++			item = g_new( AddressVCard, 1 );
++			ADDRESS_OBJECT(item)->type = ADDR_VCARD;
++			item->name = g_strdup( vcf->name );
++			item->cardFile = vcf;
++			item->items = NULL;
++			return item;
++		}
++	}
++
++	// Must be an invalid tag or data.
++	g_warning( "addressbook_parse_vcard(): Parse error\n");
++	vcard_free( vcf );
++	vcf = NULL;
++	item = NULL;
++	return NULL;
++}
++
++static void addressbook_write_vcard( FILE *fp, AddressVCard *vcard, guint level ) {
++	VCardFile *cardFile = vcard->cardFile;
++	if( cardFile ) {
++		tab_indent_out(fp, 1);
++		fputs("<vcard ", fp);
++		fputs("name=\"", fp);
++		xml_file_put_escape_str(fp, cardFile->name);
++		fputs("\"", fp);
++		fputs(" file=\"", fp);
++		xml_file_put_escape_str(fp, cardFile->path);
++		fputs("\"", fp);
++		fputs(" />\n", fp);
++	}
++}
++
++#ifdef USE_JPILOT
++static AddressJPilot *addressbook_parse_jpilot(XMLFile *file) {
++	AddressJPilot *item = NULL;
++	JPilotFile *jpf;
++	GList *attr;
++	gchar *name, *value;
++
++	jpf = jpilot_create();
++	attr = xml_get_current_tag_attr( file );
++	while( attr ) {
++		name = ((XMLAttr *)attr->data)->name;
++		value = ((XMLAttr *)attr->data)->value;
++		if( strcmp( name, "name" ) == 0 ) {
++			jpilot_set_name( jpf, value );
++		}
++		else if( strcmp( name, "file" ) == 0 ) {
++			jpilot_set_file( jpf, value );
++		}
++		else if( strcmp( name, "custom-1" ) == 0 ) {
++			jpilot_add_custom_label( jpf, value );
++		}
++		else if( strcmp( name, "custom-2" ) == 0 ) {
++			jpilot_add_custom_label( jpf, value );
++		}
++		else if( strcmp( name, "custom-3" ) == 0 ) {
++			jpilot_add_custom_label( jpf, value );
++		}
++		else if( strcmp( name, "custom-4" ) == 0 ) {
++			jpilot_add_custom_label( jpf, value );
++		}
++		attr = g_list_next( attr );
++	}
++
++	// Move to next tag
++	if( xml_parse_next_tag( file ) >= 0 ) {
++		if( jpilot_validate( jpf ) ) {
++			item = g_new( AddressJPilot, 1 );
++			ADDRESS_OBJECT(item)->type = ADDR_JPILOT;
++			item->name = g_strdup( jpf->name );
++			item->pilotFile = jpf;
++			item->items = NULL;
++			return item;
++		}
++	}
++
++	// Must be an invalid tag or data.
++	g_warning( "addressbook_parse_jpilot(): Parse error\n");
++	jpilot_free( jpf );
++	jpf = NULL;
++	item = NULL;
++	return NULL;
++}
++
++static void addressbook_write_jpilot( FILE *fp, AddressJPilot *jpilot, guint level ) {
++	JPilotFile *pilotFile = jpilot->pilotFile;
++	if( pilotFile ) {
++		gint ind;
++		GList *node;
++		GList *customLbl = jpilot_get_custom_labels( pilotFile );
++		tab_indent_out(fp, 1);
++		fputs("<jpilot ", fp);
++		fputs("name=\"", fp);
++		xml_file_put_escape_str(fp, pilotFile->name);
++		fputs("\" file=\"", fp);
++		xml_file_put_escape_str(fp, pilotFile->path);
++
++		fputs( "\" ", fp );
++		node = customLbl;
++		ind = 1;
++		while( node ) {
++			fprintf( fp, "custom-%d=\"", ind );
++			xml_file_put_escape_str( fp, node->data );
++			fputs( "\" ", fp );
++			ind++;
++			node = g_list_next( node );
++		}
++		fputs("/>\n", fp);
++	}
++}
++#endif
++
++static void addressbook_new_vcard_cb( gpointer data, guint action, GtkWidget *widget ) {
++	AddressVCard *vcard;
++
++	if( addrbook.selected != addrbook.vcard ) return;
++	vcard = addressbook_edit_vcard( NULL );
++	if( vcard ) {
++		addressbook_add_object( addrbook.selected, ADDRESS_OBJECT(vcard) );
++		if( addrbook.selected == addrbook.opened ) {
++			addrbook.open_folder = TRUE;
++			gtk_ctree_select( GTK_CTREE(addrbook.ctree), addrbook.opened );
++		}
++	}
++}
++
++#ifdef USE_JPILOT
++static void addressbook_new_jpilot_cb( gpointer data, guint action, GtkWidget *widget ) {
++	AddressJPilot *jpilot;
++
++	if( addrbook.selected != addrbook.jpilot ) return;
++	if( ! _have_pilot_library_ ) return;
++	jpilot = addressbook_edit_jpilot( NULL );
++	if( jpilot ) {
++		addressbook_add_object( addrbook.selected, ADDRESS_OBJECT(jpilot) );
++		if( addrbook.selected == addrbook.opened ) {
++			addrbook.open_folder = TRUE;
++			gtk_ctree_select( GTK_CTREE(addrbook.ctree), addrbook.opened );
++		}
++	}
++}
++#endif
++
++/*
++* End of Source.
++*/
++
+diff -Naur ./src/addressbook.h ../sylpheed-0.4.66adr/src/addressbook.h
+--- ./src/addressbook.h	Mon Sep 25 09:25:45 2000
++++ ../sylpheed-0.4.66adr/src/addressbook.h	Wed May  9 15:24:03 2001
+@@ -25,30 +25,26 @@
+ #include <gtk/gtkitemfactory.h>
+ #include <gtk/gtkctree.h>
+ 
+-#define ADDRESS_OBJECT(obj)		((AddressObject *)obj)
+-#define ADDRESS_OBJECT_TYPE(obj)	(ADDRESS_OBJECT(obj)->type)
+-#define ADDRESS_ITEM(obj)		((AddressItem *)obj)
++#include "addressitem.h"
++#include "vcard.h"
++
++#ifdef USE_JPILOT
++#include "jpilot.h"
++#endif
++
+ #define ADDRESS_GROUP(obj)		((AddressGroup *)obj)
+ #define ADDRESS_FOLDER(obj)		((AddressFolder *)obj)
++#define ADDRESS_VCARD(obj)		((AddressVCard *)obj)
++#define ADDRESS_JPILOT(obj)		((AddressJPilot *)obj)
+ 
+-typedef struct _AddressBook	AddressBook;
+-typedef struct _AddressObject	AddressObject;
+-typedef struct _AddressItem	AddressItem;
+-typedef struct _AddressGroup	AddressGroup;
+-typedef struct _AddressFolder	AddressFolder;
+ 
+ #include "compose.h"
+ 
+-typedef enum
+-{
+-	ADDR_ITEM,
+-	ADDR_GROUP,
+-	ADDR_FOLDER
+-} AddressObjectType;
+-
++typedef struct _AddressBook	AddressBook;
+ struct _AddressBook
+ {
+ 	GtkWidget *window;
++	GtkWidget *menubar;
+ 	GtkWidget *ctree;
+ 	GtkWidget *clist;
+ 	GtkWidget *entry;
+@@ -64,9 +60,12 @@
+ 	GtkWidget *list_popup;
+ 	GtkItemFactory *tree_factory;
+ 	GtkItemFactory *list_factory;
++	GtkItemFactory *menu_factory;
+ 
+ 	GtkCTreeNode *common;
+ 	GtkCTreeNode *personal;
++	GtkCTreeNode *vcard;
++	GtkCTreeNode *jpilot;
+ 	GtkCTreeNode *selected;
+ 	GtkCTreeNode *opened;
+ 
+@@ -75,39 +74,59 @@
+ 	Compose *target_compose;
+ };
+ 
+-struct _AddressObject
++typedef struct _AddressGroup	AddressGroup;
++struct _AddressGroup
+ {
+-	AddressObjectType type;
++	AddressObject obj;
++
++	gchar *name;
++
++	/* Group contains only Items */
++	GList *items;
+ };
+ 
+-struct _AddressItem
++typedef struct _AddressFolder	AddressFolder;
++struct _AddressFolder
+ {
+ 	AddressObject obj;
+ 
+ 	gchar *name;
+-	gchar *address;
+-	gchar *remarks;
++
++	/* Folder contains Groups and Items */
++	GList *items;
+ };
+ 
+-struct _AddressGroup
++typedef struct _AddressVCard	AddressVCard;
++struct _AddressVCard
+ {
+ 	AddressObject obj;
+ 
+ 	gchar *name;
++	VCardFile *cardFile;
+ 
+-	/* Group contains only Items */
++	/* Folder contains only VCards */
+ 	GList *items;
+ };
+ 
+-struct _AddressFolder
++#ifdef USE_JPILOT
++typedef struct _AddressJPilot	AddressJPilot;
++struct _AddressJPilot
+ {
+ 	AddressObject obj;
+ 
+ 	gchar *name;
++	JPilotFile *pilotFile;
+ 
+-	/* Folder contains Groups and Items */
++	/* Folder contains only JPilotFiles */
+ 	GList *items;
+ };
++#endif
++
++struct _AddressFileSelection {
++	GtkWidget *fileSelector;
++	gboolean cancelled;
++};
++typedef struct _AddressFileSelection AddressFileSelection;
+ 
+ void addressbook_open			(Compose	*target);
+ void addressbook_set_target_compose	(Compose	*target);
+diff -Naur ./src/addressitem.h ../sylpheed-0.4.66adr/src/addressitem.h
+--- ./src/addressitem.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/addressitem.h	Wed May  9 15:24:07 2001
+@@ -0,0 +1,57 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 1999,2000 Hiroyuki Yamamoto
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Address item data.
++ */
++
++#ifndef __ADDRESSITEM_H__
++#define __ADDRESSITEM_H__
++
++#define ADDRESS_OBJECT(obj)		((AddressObject *)obj)
++#define ADDRESS_OBJECT_TYPE(obj)	(ADDRESS_OBJECT(obj)->type)
++#define ADDRESS_ITEM(obj)		((AddressItem *)obj)
++
++typedef struct _AddressObject	AddressObject;
++typedef struct _AddressItem	AddressItem;
++
++typedef enum
++{
++	ADDR_ITEM,
++	ADDR_GROUP,
++	ADDR_FOLDER,
++	ADDR_VCARD,
++	ADDR_JPILOT
++} AddressObjectType;
++
++struct _AddressObject
++{
++	AddressObjectType type;
++};
++
++struct _AddressItem
++{
++	AddressObject obj;
++
++	gchar *name;
++	gchar *address;
++	gchar *remarks;
++};
++
++#endif /* __ADDRESSITEM_H__ */
+diff -Naur ./src/editjpilot.c ../sylpheed-0.4.66adr/src/editjpilot.c
+--- ./src/editjpilot.c	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/editjpilot.c	Wed May  9 15:24:35 2001
+@@ -0,0 +1,419 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Edit JPilot address book data.
++ */
++
++#ifdef HAVE_CONFIG_H
++#  include "config.h"
++#endif
++
++#ifdef USE_JPILOT
++
++#include "defs.h"
++
++#include <glib.h>
++#include <gdk/gdkkeysyms.h>
++#include <gtk/gtkwindow.h>
++#include <gtk/gtksignal.h>
++#include <gtk/gtkhbox.h>
++#include <gtk/gtklabel.h>
++#include <gtk/gtkentry.h>
++#include <gtk/gtkhbbox.h>
++#include <gtk/gtkbutton.h>
++
++#include "intl.h"
++#include "addressbook.h"
++#include "prefs_common.h"
++#include "addressitem.h"
++#include "jpilot.h"
++
++#define ADDRESSBOOK_GUESS_JPILOT "JPilot"
++#define JPILOT_NUM_CUSTOM_LABEL	4
++
++static struct _JPilotEdit {
++	GtkWidget *window;
++	GtkWidget *name_entry;
++	GtkWidget *file_entry;
++	GtkWidget *custom_check[JPILOT_NUM_CUSTOM_LABEL];
++	GtkWidget *custom_label[JPILOT_NUM_CUSTOM_LABEL];
++	GtkWidget *message_lbl;
++	GtkWidget *ok_btn;
++	GtkWidget *cancel_btn;
++} jpilotedit;
++
++static struct _AddressFileSelection jpilot_file_selector;
++
++/*
++* Edit functions.
++*/
++
++static gint edit_jpilot_delete_event( GtkWidget *widget, GdkEventAny *event, gboolean *cancelled ) {
++	*cancelled = TRUE;
++	gtk_main_quit();
++	return TRUE;
++}
++
++static void edit_jpilot_key_pressed( GtkWidget *widget, GdkEventKey *event, gboolean *cancelled ) {
++	if (event && event->keyval == GDK_Escape) {
++		*cancelled = TRUE;
++		gtk_main_quit();
++	}
++}
++
++static void edit_jpilot_ok( GtkWidget *widget, gboolean *cancelled ) {
++	*cancelled = FALSE;
++	gtk_main_quit();
++}
++
++static void edit_jpilot_cancel( GtkWidget *widget, gboolean *cancelled ) {
++	*cancelled = TRUE;
++	gtk_main_quit();
++}
++
++static void edit_jpilot_fill_check_box( JPilotFile *jpf ) {
++	gint i;
++	GList *node, *customLbl = NULL;
++	gchar *labelName;
++	gboolean done, checked;
++	for( i = 0; i < JPILOT_NUM_CUSTOM_LABEL; i++ ) {
++		gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( jpilotedit.custom_check[i] ), FALSE );
++		gtk_label_set_text( GTK_LABEL( jpilotedit.custom_label[i] ), "" );
++	}
++
++	done = FALSE;
++	i = 0;
++	customLbl = jpilot_load_custom_label( jpf, customLbl );
++	node = customLbl;
++	while( ! done ) {
++		if( node ) {
++			labelName = node->data;
++			gtk_label_set_text( GTK_LABEL( jpilotedit.custom_label[i] ), labelName );
++			checked = jpilot_test_custom_label( jpf, labelName );
++			gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( jpilotedit.custom_check[i] ), checked );
++			i++;
++			if( i >= JPILOT_NUM_CUSTOM_LABEL ) done = TRUE;
++			node = g_list_next( node );
++		}
++		else {
++			done = TRUE;
++		}
++	}
++	mgu_free_dlist( customLbl );
++	customLbl = NULL;
++}
++
++static void edit_jpilot_fill_check_box_new() {
++	gint i;
++	for( i = 0; i < JPILOT_NUM_CUSTOM_LABEL; i++ ) {
++		gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( jpilotedit.custom_check[i] ), FALSE );
++		gtk_label_set_text( GTK_LABEL( jpilotedit.custom_label[i] ), "" );
++	}
++}
++
++static void edit_jpilot_read_check_box( JPilotFile *pilotFile ) {
++	gint i;
++	gchar *labelName;
++	jpilot_clear_custom_labels( pilotFile );
++	for( i = 0; i < JPILOT_NUM_CUSTOM_LABEL; i++ ) {
++		if( gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(jpilotedit.custom_check[i]) ) ) {
++			labelName = g_strdup( GTK_LABEL(jpilotedit.custom_label[i])->label );
++			jpilot_add_custom_label( pilotFile, labelName );
++		}
++	}
++}
++
++static void edit_jpilot_file_check( void ) {
++	gint t;
++	gchar *sFile;
++	gchar *sMsg;
++	gboolean flg;
++
++	flg = FALSE;
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(jpilotedit.file_entry), 0, -1 );
++	if( sFile ) {
++		g_strchomp( sFile ); g_strchug( sFile );
++		if( *sFile != '\0' ) {
++			// Attempt to read file
++			JPilotFile *jpf = jpilot_create_path( sFile );
++			t = jpilot_read_file( jpf );
++			if( t == MGU_SUCCESS ) {
++				// Set check boxes
++				edit_jpilot_fill_check_box( jpf );
++				flg = TRUE;
++			}
++			jpilot_free( jpf );
++		}
++	}
++	if( ! flg ) {
++		// Clear all check boxes
++		edit_jpilot_fill_check_box_new();
++	}
++	g_free( sFile );
++
++	// Display appropriate message
++	if( t == MGU_SUCCESS ) {
++		sMsg = "";
++	}
++	else if( t == MGU_BAD_FORMAT || t == MGU_OO_MEMORY ) {
++		sMsg = _("File does not appear to be JPilot format.");
++	}
++	else {
++		sMsg = _("Could not read file.");
++	}
++	gtk_label_set_text( GTK_LABEL(jpilotedit.message_lbl), sMsg );
++}
++
++static void edit_jpilot_file_ok( GtkWidget *widget, gpointer data ) {
++	gchar *sFile;
++	AddressFileSelection *afs;
++	GtkWidget *fileSel;
++
++	afs = ( AddressFileSelection * ) data;
++	fileSel = afs->fileSelector;
++	sFile = gtk_file_selection_get_filename( GTK_FILE_SELECTION(fileSel) );
++
++	afs->cancelled = FALSE;
++	gtk_entry_set_text( GTK_ENTRY(jpilotedit.file_entry), sFile );
++	gtk_widget_hide( afs->fileSelector );
++	gtk_grab_remove( afs->fileSelector );
++	edit_jpilot_file_check();
++	gtk_widget_grab_focus( jpilotedit.file_entry );
++}
++
++static void edit_jpilot_file_cancel( GtkWidget *widget, gpointer data ) {
++	AddressFileSelection *afs = ( AddressFileSelection * ) data;
++	afs->cancelled = TRUE;
++	gtk_widget_hide( afs->fileSelector );
++	gtk_grab_remove( afs->fileSelector );
++	gtk_widget_grab_focus( jpilotedit.file_entry );
++}
++
++static void edit_jpilot_file_select_create( AddressFileSelection *afs ) {
++	GtkWidget *fileSelector;
++
++	fileSelector = gtk_file_selection_new( _("Select JPilot File") );
++	gtk_file_selection_hide_fileop_buttons( GTK_FILE_SELECTION(fileSelector) );
++	gtk_signal_connect( GTK_OBJECT (GTK_FILE_SELECTION(fileSelector)->ok_button),
++                             "clicked", GTK_SIGNAL_FUNC (edit_jpilot_file_ok), ( gpointer ) afs );
++	gtk_signal_connect( GTK_OBJECT (GTK_FILE_SELECTION(fileSelector)->cancel_button),
++                             "clicked", GTK_SIGNAL_FUNC (edit_jpilot_file_cancel), ( gpointer ) afs );
++	afs->fileSelector = fileSelector;
++	afs->cancelled = TRUE;
++}
++
++static void edit_jpilot_file_select( void ) {
++	gchar *sFile;
++
++	if (! jpilot_file_selector.fileSelector )
++		edit_jpilot_file_select_create( & jpilot_file_selector );
++
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(jpilotedit.file_entry), 0, -1 );
++	gtk_file_selection_set_filename( GTK_FILE_SELECTION( jpilot_file_selector.fileSelector ), sFile );
++	g_free( sFile );
++	gtk_widget_show( jpilot_file_selector.fileSelector );
++	gtk_grab_add( jpilot_file_selector.fileSelector );
++}
++
++static void addressbook_edit_jpilot_create( gboolean *cancelled ) {
++	GtkWidget *window;
++	GtkWidget *vbox;
++	GtkWidget *table;
++	GtkWidget *label;
++	GtkWidget *name_entry;
++	GtkWidget *file_entry;
++	GtkWidget *custom_check[JPILOT_NUM_CUSTOM_LABEL];
++	GtkWidget *custom_label[JPILOT_NUM_CUSTOM_LABEL];
++	GtkWidget *hbox;
++	GtkWidget *hbbox;
++	GtkWidget *ok_btn;
++	GtkWidget *cancel_btn;
++	GtkWidget *check_btn;
++	GtkWidget *file_btn;
++	GtkWidget *msg_lbl;
++	gint top, i;
++
++	window = gtk_window_new(GTK_WINDOW_DIALOG);
++	gtk_widget_set_usize(window, 450, -1);
++	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
++	gtk_window_set_title(GTK_WINDOW(window), _("Edit JPilot Entry"));
++	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
++	gtk_window_set_modal(GTK_WINDOW(window), TRUE);	
++	gtk_signal_connect(GTK_OBJECT(window), "delete_event",
++			   GTK_SIGNAL_FUNC(edit_jpilot_delete_event),
++			   cancelled);
++	gtk_signal_connect(GTK_OBJECT(window), "key_press_event",
++			   GTK_SIGNAL_FUNC(edit_jpilot_key_pressed),
++			   cancelled);
++
++	vbox = gtk_vbox_new(FALSE, 8);
++	gtk_container_add(GTK_CONTAINER(window), vbox);
++
++	table = gtk_table_new(3 + JPILOT_NUM_CUSTOM_LABEL, 3, FALSE);
++	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, FALSE, 0);
++	gtk_table_set_row_spacings(GTK_TABLE(table), 8);
++	gtk_table_set_col_spacings(GTK_TABLE(table), 8);
++
++	// First row
++	top = 0;
++	label = gtk_label_new(_("Name"));
++	gtk_table_attach(GTK_TABLE(table), label, 0, 1, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
++
++	name_entry = gtk_entry_new();
++	gtk_table_attach(GTK_TABLE(table), name_entry, 1, 2, top, (top + 1), GTK_EXPAND|GTK_SHRINK|GTK_FILL, 0, 0, 0);
++
++	check_btn = gtk_button_new_with_label( _(" Check File "));
++	gtk_table_attach(GTK_TABLE(table), check_btn, 2, 3, top, (top + 1), GTK_FILL, 0, 3, 0);
++
++	// Second row
++	top = 1;
++	label = gtk_label_new(_("File"));
++	gtk_table_attach(GTK_TABLE(table), label, 0, 1, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
++
++	file_entry = gtk_entry_new();
++	gtk_table_attach(GTK_TABLE(table), file_entry, 1, 2, top, (top + 1), GTK_EXPAND|GTK_SHRINK|GTK_FILL, 0, 0, 0);
++
++	file_btn = gtk_button_new_with_label( _(" ... "));
++	gtk_table_attach(GTK_TABLE(table), file_btn, 2, 3, top, (top + 1), GTK_FILL, 0, 3, 0);
++
++	// Third row
++	top = 2;
++	label = gtk_label_new(_("Include"));
++	gtk_table_attach(GTK_TABLE(table), label, 0, 1, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
++
++	// Now do custom labels.
++	for( i = 0; i < JPILOT_NUM_CUSTOM_LABEL; i++ ) {
++	  hbox = gtk_hbox_new( FALSE, 0 );
++	  custom_check[i] = gtk_check_button_new();
++	  custom_label[i] = gtk_label_new( "" );
++	  gtk_box_pack_start( GTK_BOX(hbox), custom_check[i], FALSE, FALSE, 0 );
++	  gtk_box_pack_start( GTK_BOX(hbox), custom_label[i], TRUE, TRUE, 0 );
++	  gtk_table_attach(GTK_TABLE(table), hbox, 1, 2, top, (top + 1), GTK_FILL, 0, 0, 0);
++	  gtk_misc_set_alignment(GTK_MISC(custom_label[i]), 0, 0.5);
++	  top++;
++	}
++
++	// Message line.
++	msg_lbl = gtk_label_new("");
++	gtk_table_attach(GTK_TABLE(table), msg_lbl, 0, 3, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(msg_lbl), 0, 0.5);
++
++	gtkut_button_set_create(&hbbox, &ok_btn, _("OK"),
++				&cancel_btn, _("Cancel"), NULL, NULL);
++	gtk_box_pack_end(GTK_BOX(vbox), hbbox, FALSE, FALSE, 0);
++	gtk_widget_grab_default(ok_btn);
++
++	gtk_signal_connect(GTK_OBJECT(ok_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_jpilot_ok), cancelled);
++	gtk_signal_connect(GTK_OBJECT(cancel_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_jpilot_cancel), cancelled);
++	gtk_signal_connect(GTK_OBJECT(file_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_jpilot_file_select), NULL);
++	gtk_signal_connect(GTK_OBJECT(check_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_jpilot_file_check), NULL);
++
++	gtk_widget_show_all(vbox);
++
++	jpilotedit.window      = window;
++	jpilotedit.name_entry  = name_entry;
++	jpilotedit.file_entry  = file_entry;
++	jpilotedit.message_lbl = msg_lbl;
++	jpilotedit.ok_btn      = ok_btn;
++	jpilotedit.cancel_btn  = cancel_btn;
++	for( i = 0; i < JPILOT_NUM_CUSTOM_LABEL; i++ ) {
++		jpilotedit.custom_check[i] = custom_check[i];
++		jpilotedit.custom_label[i] = custom_label[i];
++	}
++}
++
++AddressJPilot *addressbook_edit_jpilot( AddressJPilot *jpilot ) {
++	static gboolean cancelled;
++	gchar *sName;
++	gchar *sFile;
++	JPilotFile *jpf;
++	gboolean fin;
++
++	if (!jpilotedit.window)
++		addressbook_edit_jpilot_create(&cancelled);
++	gtk_widget_grab_focus(jpilotedit.ok_btn);
++	gtk_widget_grab_focus(jpilotedit.name_entry);
++	gtk_widget_show(jpilotedit.window);
++	manage_window_set_transient(GTK_WINDOW(jpilotedit.window));
++
++	gtk_label_set_text( GTK_LABEL( jpilotedit.message_lbl ), "" );
++	if( jpilot ) {
++		jpf = jpilot->pilotFile;
++		if (jpf->name)
++			gtk_entry_set_text(GTK_ENTRY(jpilotedit.name_entry), jpf->name);
++		if (jpf->path)
++			gtk_entry_set_text(GTK_ENTRY(jpilotedit.file_entry), jpf->path);
++		gtk_window_set_title( GTK_WINDOW(jpilotedit.window), _("Edit JPilot Entry"));
++		edit_jpilot_fill_check_box( jpf );
++	}
++	else {
++		gchar *guessFile = jpilot_find_pilotdb();
++		gtk_entry_set_text(GTK_ENTRY(jpilotedit.name_entry), ADDRESSBOOK_GUESS_JPILOT );
++		gtk_entry_set_text(GTK_ENTRY(jpilotedit.file_entry), guessFile );
++		gtk_window_set_title( GTK_WINDOW(jpilotedit.window), _("Add New JPilot Entry"));
++		edit_jpilot_fill_check_box_new();
++		// Attempt to load labels
++		if( *guessFile != '\0' ) {
++			edit_jpilot_file_check();
++		}
++	}
++
++	gtk_main();
++	gtk_widget_hide(jpilotedit.window);
++	if (cancelled == TRUE) return NULL;
++
++	fin = FALSE;
++	sName = gtk_editable_get_chars( GTK_EDITABLE(jpilotedit.name_entry), 0, -1 );
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(jpilotedit.file_entry), 0, -1 );
++	if( *sName == '\0' ) fin = TRUE;
++	if( *sFile == '\0' ) fin = TRUE;
++
++	if( ! fin ) {
++		if( ! jpilot ) {
++			jpilot = g_new0(AddressJPilot, 1);
++			ADDRESS_OBJECT_TYPE(jpilot) = ADDR_JPILOT;
++			jpf = jpilot_create();
++			jpilot->pilotFile = jpf;
++		}
++		g_free( jpilot->name );
++		jpilot->name = g_strdup( sName );
++		jpilot_set_name( jpf, sName );
++		jpilot_set_file( jpf, sFile );
++		edit_jpilot_read_check_box( jpf );
++	}
++	g_free( sName );
++	g_free( sFile );
++
++	return jpilot;
++}
++
++#endif /* USE_JPILOT */
++
++/*
++* End of Source.
++*/
++
+diff -Naur ./src/editjpilot.h ../sylpheed-0.4.66adr/src/editjpilot.h
+--- ./src/editjpilot.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/editjpilot.h	Wed May  9 15:24:35 2001
+@@ -0,0 +1,39 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Edit JPilot address book data.
++ */
++
++#ifndef __EDITJPILOT_H__
++#define __EDITJPILOT_H__
++
++#ifdef USE_JPILOT
++
++// Function prototypes
++AddressJPilot *addressbook_edit_jpilot( AddressJPilot *jpilot );
++
++#endif /* USE_JPILOT */
++
++#endif /* __EDITJPILOT_H__ */
++
++/*
++* End of Source.
++*/
++
+diff -Naur ./src/editvcard.c ../sylpheed-0.4.66adr/src/editvcard.c
+--- ./src/editvcard.c	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/editvcard.c	Wed May  9 15:24:31 2001
+@@ -0,0 +1,305 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Edit VCard address book data.
++ */
++
++#ifdef HAVE_CONFIG_H
++#  include "config.h"
++#endif
++
++#include "defs.h"
++
++#include <glib.h>
++#include <gdk/gdkkeysyms.h>
++#include <gtk/gtkwindow.h>
++#include <gtk/gtksignal.h>
++#include <gtk/gtklabel.h>
++#include <gtk/gtkentry.h>
++#include <gtk/gtktable.h>
++#include <gtk/gtkbutton.h>
++
++#include "intl.h"
++#include "addressbook.h"
++#include "prefs_common.h"
++#include "addressitem.h"
++#include "vcard.h"
++
++#define ADDRESSBOOK_GUESS_VCARD  "GnomeCard"
++
++static struct _VCardEdit {
++	GtkWidget *window;
++	GtkWidget *name_entry;
++	GtkWidget *file_entry;
++	GtkWidget *message_lbl;
++	GtkWidget *ok_btn;
++	GtkWidget *cancel_btn;
++} vcardedit;
++
++static struct _AddressFileSelection vcard_file_selector;
++
++/*
++* Edit functions.
++*/
++static void edit_vcard_ok( GtkWidget *widget, gboolean *cancelled ) {
++	*cancelled = FALSE;
++	gtk_main_quit();
++}
++
++static void edit_vcard_cancel( GtkWidget *widget, gboolean *cancelled ) {
++	*cancelled = TRUE;
++	gtk_main_quit();
++}
++
++static void edit_vcard_file_check( void ) {
++	gint t;
++	gchar *sFile;
++	gchar *sMsg;
++
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(vcardedit.file_entry), 0, -1 );
++	t = vcard_test_read_file( sFile );
++	g_free( sFile );
++	if( t == MGU_SUCCESS ) {
++		sMsg = "";
++	}
++	else if( t == MGU_BAD_FORMAT ) {
++		sMsg = _("File does not appear to be VCard format.");
++	}
++	else {
++		sMsg = _("Could not read file.");
++	}
++	gtk_label_set_text( GTK_LABEL(vcardedit.message_lbl), sMsg );
++}
++
++static void edit_vcard_file_ok( GtkWidget *widget, gpointer data ) {
++	gchar *sFile;
++	AddressFileSelection *afs;
++	GtkWidget *fileSel;
++
++	afs = ( AddressFileSelection * ) data;
++	fileSel = afs->fileSelector;
++	sFile = gtk_file_selection_get_filename( GTK_FILE_SELECTION(fileSel) );
++
++	afs->cancelled = FALSE;
++	gtk_entry_set_text( GTK_ENTRY(vcardedit.file_entry), sFile );
++	gtk_widget_hide( afs->fileSelector );
++	gtk_grab_remove( afs->fileSelector );
++	edit_vcard_file_check();
++	gtk_widget_grab_focus( vcardedit.file_entry );
++}
++
++static void edit_vcard_file_cancel( GtkWidget *widget, gpointer data ) {
++	AddressFileSelection *afs = ( AddressFileSelection * ) data;
++	afs->cancelled = TRUE;
++	gtk_widget_hide( afs->fileSelector );
++	gtk_grab_remove( afs->fileSelector );
++	gtk_widget_grab_focus( vcardedit.file_entry );
++}
++
++static void edit_vcard_file_select_create( AddressFileSelection *afs ) {
++	GtkWidget *fileSelector;
++
++	fileSelector = gtk_file_selection_new( _("Select VCard File") );
++	gtk_file_selection_hide_fileop_buttons( GTK_FILE_SELECTION(fileSelector) );
++	gtk_signal_connect( GTK_OBJECT (GTK_FILE_SELECTION(fileSelector)->ok_button),
++                             "clicked", GTK_SIGNAL_FUNC (edit_vcard_file_ok), ( gpointer ) afs );
++	gtk_signal_connect( GTK_OBJECT (GTK_FILE_SELECTION(fileSelector)->cancel_button),
++                             "clicked", GTK_SIGNAL_FUNC (edit_vcard_file_cancel), ( gpointer ) afs );
++	afs->fileSelector = fileSelector;
++	afs->cancelled = TRUE;
++}
++
++static void edit_vcard_file_select( void ) {
++	gchar *sFile;
++
++	if (! vcard_file_selector.fileSelector )
++		edit_vcard_file_select_create( & vcard_file_selector );
++
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(vcardedit.file_entry), 0, -1 );
++	gtk_file_selection_set_filename( GTK_FILE_SELECTION( vcard_file_selector.fileSelector ), sFile );
++	g_free( sFile );
++	gtk_widget_show( vcard_file_selector.fileSelector );
++	gtk_grab_add( vcard_file_selector.fileSelector );
++}
++
++static gint edit_vcard_delete_event( GtkWidget *widget, GdkEventAny *event, gboolean *cancelled ) {
++	*cancelled = TRUE;
++	gtk_main_quit();
++	return TRUE;
++}
++
++static void edit_vcard_key_pressed( GtkWidget *widget, GdkEventKey *event, gboolean *cancelled ) {
++	if (event && event->keyval == GDK_Escape) {
++		*cancelled = TRUE;
++		gtk_main_quit();
++	}
++}
++
++static void addressbook_edit_vcard_create( gboolean *cancelled ) {
++	GtkWidget *window;
++	GtkWidget *vbox;
++	GtkWidget *table;
++	GtkWidget *label;
++	GtkWidget *name_entry;
++	GtkWidget *file_entry;
++	GtkWidget *hbbox;
++	GtkWidget *ok_btn;
++	GtkWidget *cancel_btn;
++	GtkWidget *check_btn;
++	GtkWidget *file_btn;
++	GtkWidget *msg_lbl;
++	gint top;
++
++	window = gtk_window_new(GTK_WINDOW_DIALOG);
++	gtk_widget_set_usize(window, 450, -1);
++	gtk_container_set_border_width(GTK_CONTAINER(window), 8);
++	gtk_window_set_title(GTK_WINDOW(window), _("Edit VCard Entry"));
++	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
++	gtk_window_set_modal(GTK_WINDOW(window), TRUE);	
++	gtk_signal_connect(GTK_OBJECT(window), "delete_event",
++			   GTK_SIGNAL_FUNC(edit_vcard_delete_event),
++			   cancelled);
++	gtk_signal_connect(GTK_OBJECT(window), "key_press_event",
++			   GTK_SIGNAL_FUNC(edit_vcard_key_pressed),
++			   cancelled);
++
++	vbox = gtk_vbox_new(FALSE, 8);
++	gtk_container_add(GTK_CONTAINER(window), vbox);
++
++	table = gtk_table_new(3, 3, FALSE);
++	gtk_box_pack_start(GTK_BOX(vbox), table, FALSE, FALSE, 0);
++	gtk_table_set_row_spacings(GTK_TABLE(table), 8);
++	gtk_table_set_col_spacings(GTK_TABLE(table), 8);
++
++	// First row
++	top = 0;
++	label = gtk_label_new(_("Name"));
++	gtk_table_attach(GTK_TABLE(table), label, 0, 1, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
++
++	name_entry = gtk_entry_new();
++	gtk_table_attach(GTK_TABLE(table), name_entry, 1, 2, top, (top + 1), GTK_EXPAND|GTK_SHRINK|GTK_FILL, 0, 0, 0);
++
++	check_btn = gtk_button_new_with_label( _(" Check File "));
++	gtk_table_attach(GTK_TABLE(table), check_btn, 2, 3, top, (top + 1), GTK_FILL, 0, 3, 0);
++
++	// Second row
++	top = 1;
++	label = gtk_label_new(_("File"));
++	gtk_table_attach(GTK_TABLE(table), label, 0, 1, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
++
++	file_entry = gtk_entry_new();
++	gtk_table_attach(GTK_TABLE(table), file_entry, 1, 2, top, (top + 1), GTK_EXPAND|GTK_SHRINK|GTK_FILL, 0, 0, 0);
++
++	file_btn = gtk_button_new_with_label( _(" ... "));
++	gtk_table_attach(GTK_TABLE(table), file_btn, 2, 3, top, (top + 1), GTK_FILL, 0, 3, 0);
++
++	// Third row (message line).
++	top = 2;
++	msg_lbl = gtk_label_new("");
++	gtk_table_attach(GTK_TABLE(table), msg_lbl, 0, 3, top, (top + 1), GTK_FILL, 0, 0, 0);
++	gtk_misc_set_alignment(GTK_MISC(msg_lbl), 0, 0.5);
++
++	gtkut_button_set_create(&hbbox, &ok_btn, _("OK"),
++				&cancel_btn, _("Cancel"), NULL, NULL);
++	gtk_box_pack_end(GTK_BOX(vbox), hbbox, FALSE, FALSE, 0);
++	gtk_widget_grab_default(ok_btn);
++
++	gtk_signal_connect(GTK_OBJECT(ok_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_vcard_ok), cancelled);
++	gtk_signal_connect(GTK_OBJECT(cancel_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_vcard_cancel), cancelled);
++	gtk_signal_connect(GTK_OBJECT(file_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_vcard_file_select), NULL);
++	gtk_signal_connect(GTK_OBJECT(check_btn), "clicked",
++			   GTK_SIGNAL_FUNC(edit_vcard_file_check), NULL);
++
++	gtk_widget_show_all(vbox);
++
++	vcardedit.window      = window;
++	vcardedit.name_entry  = name_entry;
++	vcardedit.file_entry  = file_entry;
++	vcardedit.message_lbl = msg_lbl;
++	vcardedit.ok_btn      = ok_btn;
++	vcardedit.cancel_btn  = cancel_btn;
++}
++
++AddressVCard *addressbook_edit_vcard( AddressVCard *vcard ) {
++	static gboolean cancelled;
++	gchar *sName;
++	gchar *sFile;
++	VCardFile *vcf;
++	gboolean fin;
++
++	if (!vcardedit.window)
++		addressbook_edit_vcard_create(&cancelled);
++	gtk_widget_grab_focus(vcardedit.ok_btn);
++	gtk_widget_grab_focus(vcardedit.name_entry);
++	gtk_widget_show(vcardedit.window);
++	manage_window_set_transient(GTK_WINDOW(vcardedit.window));
++
++	gtk_label_set_text( GTK_LABEL( vcardedit.message_lbl ), "" );
++	if( vcard ) {
++		vcf = vcard->cardFile;
++		if (vcf->name)
++			gtk_entry_set_text(GTK_ENTRY(vcardedit.name_entry), vcf->name);
++		if (vcf->path)
++			gtk_entry_set_text(GTK_ENTRY(vcardedit.file_entry), vcf->path);
++		gtk_window_set_title( GTK_WINDOW(vcardedit.window), _("Edit VCard Entry"));
++	}
++	else {
++		gtk_entry_set_text(GTK_ENTRY(vcardedit.name_entry), ADDRESSBOOK_GUESS_VCARD );
++		gtk_entry_set_text(GTK_ENTRY(vcardedit.file_entry), vcard_find_gnomecard() );
++		gtk_window_set_title( GTK_WINDOW(vcardedit.window), _("Add New VCard Entry"));
++	}
++
++	gtk_main();
++	gtk_widget_hide(vcardedit.window);
++	if (cancelled == TRUE) return NULL;
++
++	fin = FALSE;
++	sName = gtk_editable_get_chars( GTK_EDITABLE(vcardedit.name_entry), 0, -1 );
++	sFile = gtk_editable_get_chars( GTK_EDITABLE(vcardedit.file_entry), 0, -1 );
++	if( *sName == '\0' ) fin = TRUE;
++	if( *sFile == '\0' ) fin = TRUE;
++
++	if( ! fin ) {
++		if( ! vcard ) {
++			vcard = g_new0(AddressVCard, 1);
++			ADDRESS_OBJECT_TYPE(vcard) = ADDR_VCARD;
++			vcf = vcard_create();
++			vcard->cardFile = vcf;
++		}
++		g_free( vcard->name );
++		vcard->name = g_strdup( sName );
++		vcard_set_name( vcf, sName );
++		vcard_set_file( vcf, sFile );
++	}
++	g_free( sName );
++	g_free( sFile );
++
++	return vcard;
++}
++
++/*
++* End of Source.
++*/
++
+diff -Naur ./src/editvcard.h ../sylpheed-0.4.66adr/src/editvcard.h
+--- ./src/editvcard.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/editvcard.h	Wed May  9 15:24:31 2001
+@@ -0,0 +1,35 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Edit VCard address book data.
++ */
++
++#ifndef __EDITVCARD_H__
++#define __EDITVCARD_H__
++
++// Function prototypes
++AddressVCard *addressbook_edit_vcard( AddressVCard *vcard );
++
++#endif /* __EDITVCARD_H__ */
++
++/*
++* End of Source.
++*/
++
+diff -Naur ./src/jpilot.c ../sylpheed-0.4.66adr/src/jpilot.c
+--- ./src/jpilot.c	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/jpilot.c	Wed May  9 15:24:12 2001
+@@ -0,0 +1,1026 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Functions necessary to access JPilot database files.
++ * JPilot is Copyright(c) by Judd Montgomery.
++ * Visit http://www.jpilot.org for more details.
++ */
++
++#ifdef HAVE_CONFIG_H
++#  include "config.h"
++#endif
++
++#ifdef USE_JPILOT
++
++#include <time.h>
++#include <stdio.h>
++#include <sys/stat.h>
++#include <dlfcn.h>
++
++#include <pi-args.h>
++#include <pi-appinfo.h>
++#include <pi-address.h>
++
++#include "mgutils.h"
++#include "jpilot.h"
++
++#define JPILOT_DBHOME_DIR   ".jpilot"
++#define JPILOT_DBHOME_FILE  "AddressDB.pdb"
++#define PILOT_LINK_LIB_NAME "libpisock.so"
++
++#define IND_LABEL_LASTNAME  0 	// Index of last name in address data
++#define IND_LABEL_FIRSTNAME 1 	// Index of first name in address data
++#define IND_PHONE_EMAIL     4 	// Index of E-Mail address in phone labels
++#define OFFSET_PHONE_LABEL  3 	// Offset to phone data in address data
++#define IND_CUSTOM_LABEL    14	// Offset to custom label names
++#define NUM_CUSTOM_LABEL    4 	// Number of custom labels
++
++/*
++* Specify name to be used.
++*/
++void jpilot_set_name( JPilotFile* pilotFile, const gchar *name ) {
++	if( pilotFile->name ) g_free( pilotFile->name );
++	if( name ) pilotFile->name = g_strdup( name );
++}
++
++/*
++* Specify file to be used.
++*/
++void jpilot_set_file( JPilotFile* pilotFile, const gchar *path ) {
++	g_return_if_fail( pilotFile != NULL );
++	mgu_refresh_cache( pilotFile->addressCache );
++	pilotFile->readMetadata = FALSE;
++
++	/* Copy file path */
++	if( pilotFile->path ) g_free( pilotFile->path );
++	if( path ) pilotFile->path = g_strdup( path );
++}
++
++/*
++* Create new pilot file object.
++*/
++JPilotFile *jpilot_create() {
++	JPilotFile *pilotFile;
++	pilotFile = g_new( JPilotFile, 1 );
++	pilotFile->name = NULL;
++	pilotFile->path = NULL;
++	pilotFile->file = NULL;
++	pilotFile->addressCache = mgu_create_cache();
++	pilotFile->readMetadata = FALSE;
++	pilotFile->customLabels = NULL;
++	pilotFile->labelInd = NULL;
++	return pilotFile;
++}
++
++/*
++* Create new pilot file object for specified file.
++*/
++JPilotFile *jpilot_create_path( const gchar *path ) {
++	JPilotFile *pilotFile;
++	pilotFile = jpilot_create();
++	jpilot_set_file( pilotFile, path );
++	return pilotFile;
++}
++
++/*
++* Free up custom label list.
++*/
++void jpilot_clear_custom_labels( JPilotFile *pilotFile ) {
++	GSList *node;
++	g_return_if_fail( pilotFile != NULL );
++
++	// Release custom labels
++	mgu_free_list( pilotFile->customLabels );
++	pilotFile->customLabels = NULL;
++
++	// Release indexes
++	node = pilotFile->labelInd;
++	while( node ) {
++		node->data = NULL;
++		node = g_slist_next( node );
++	}
++	g_slist_free( pilotFile->labelInd );
++	pilotFile->labelInd = NULL;
++
++	// Force a fresh read
++	mgu_refresh_cache( pilotFile->addressCache );
++}
++
++/*
++* Append a custom label, representing an E-Mail address field to the
++* custom label list.
++*/
++void jpilot_add_custom_label( JPilotFile *pilotFile, const gchar *labelName ) {
++	g_return_if_fail( pilotFile != NULL );
++
++	if( labelName ) {
++		gchar *labelCopy = g_strdup( labelName );
++		g_strstrip( labelCopy );
++		if( *labelCopy == '\0' ) {
++			g_free( labelCopy );
++		}
++		else {
++			pilotFile->customLabels = g_slist_append( pilotFile->customLabels, labelCopy );
++			// Force a fresh read
++			mgu_refresh_cache( pilotFile->addressCache );
++		}
++	}
++}
++
++/*
++* Get list of custom labels.
++* Return: List of labels. Must use g_free() when done.
++*/
++GList *jpilot_get_custom_labels( JPilotFile *pilotFile ) {
++	GList *retVal = NULL;
++	GSList *node;
++	g_return_if_fail( pilotFile != NULL );
++	node = pilotFile->customLabels;
++	while( node ) {
++		retVal = g_list_append( retVal, g_strdup( node->data ) );
++		node = g_slist_next( node );
++	}
++	return retVal;
++}
++
++/*
++* Free up pilot file object by releasing internal memory.
++*/
++void jpilot_free( JPilotFile *pilotFile ) {
++	g_return_if_fail( pilotFile != NULL );
++
++	/* Free internal stuff */
++	g_free( pilotFile->path );
++
++	// Release custom labels
++	jpilot_clear_custom_labels( pilotFile );
++
++	/* Clear cache */
++	mgu_clear_cache( pilotFile->addressCache );
++	mgu_free_cache( pilotFile->addressCache );
++	pilotFile->addressCache = NULL;
++	pilotFile->readMetadata = FALSE;
++
++	/* Now release file object */
++	g_free( pilotFile );
++}
++
++/*
++* Refresh internal variables to force a file read.
++*/
++void jpilot_force_refresh( JPilotFile *pilotFile ) {
++	mgu_refresh_cache( pilotFile->addressCache );
++}
++
++/*
++* Display object to specified stream.
++*/
++void jpilot_print_file( JPilotFile *pilotFile, FILE *stream ) {
++	GSList *node;
++	g_return_if_fail( pilotFile != NULL );
++	fprintf( stream, "JPilotFile:\n" );
++	fprintf( stream, "file spec: '%s'\n", pilotFile->path );
++	fprintf( stream, " metadata: %s\n", pilotFile->readMetadata ? "yes" : "no" );
++
++	node = pilotFile->customLabels;
++	while( node ) {
++		fprintf( stream, "  c label: %s\n", node->data );
++		node = g_slist_next( node );
++	}
++
++	node = pilotFile->labelInd;
++	while( node ) {
++		fprintf( stream, " labelind: %d\n", GPOINTER_TO_INT(node->data) );
++		node = g_slist_next( node );
++	}
++
++	mgu_print_cache( pilotFile->addressCache, stream );
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++static unsigned int bytes_to_bin(unsigned char *bytes, unsigned int num_bytes) {
++   unsigned int i, n;
++   n=0;
++   for (i=0;i<num_bytes;i++) {
++      n = n*256+bytes[i];
++   }
++   return n;
++}
++
++// Shamelessly copied from JPilot (utils.c)
++/*These next 2 functions were copied from pi-file.c in the pilot-link app */
++/* Exact value of "Jan 1, 1970 0:00:00 GMT" - "Jan 1, 1904 0:00:00 GMT" */
++#define PILOT_TIME_DELTA (unsigned)(2082844800)
++
++time_t pilot_time_to_unix_time ( unsigned long raw_time ) {
++   return (time_t)(raw_time - PILOT_TIME_DELTA);
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++static int raw_header_to_header(RawDBHeader *rdbh, DBHeader *dbh) {
++   unsigned long temp;
++   strncpy(dbh->db_name, rdbh->db_name, 31);
++   dbh->db_name[31] = '\0';
++   dbh->flags = bytes_to_bin(rdbh->flags, 2);
++   dbh->version = bytes_to_bin(rdbh->version, 2);
++   temp = bytes_to_bin(rdbh->creation_time, 4);
++   dbh->creation_time = pilot_time_to_unix_time(temp);
++   temp = bytes_to_bin(rdbh->modification_time, 4);
++   dbh->modification_time = pilot_time_to_unix_time(temp);
++   temp = bytes_to_bin(rdbh->backup_time, 4);
++   dbh->backup_time = pilot_time_to_unix_time(temp);
++   dbh->modification_number = bytes_to_bin(rdbh->modification_number, 4);
++   dbh->app_info_offset = bytes_to_bin(rdbh->app_info_offset, 4);
++   dbh->sort_info_offset = bytes_to_bin(rdbh->sort_info_offset, 4);
++   strncpy(dbh->type, rdbh->type, 4);
++   dbh->type[4] = '\0';
++   strncpy(dbh->creator_id, rdbh->creator_id, 4);
++   dbh->creator_id[4] = '\0';
++   strncpy(dbh->unique_id_seed, rdbh->unique_id_seed, 4);
++   dbh->unique_id_seed[4] = '\0';
++   dbh->next_record_list_id = bytes_to_bin(rdbh->next_record_list_id, 4);
++   dbh->number_of_records = bytes_to_bin(rdbh->number_of_records, 2);
++   return 0;
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++/*returns 1 if found */
++/*        0 if eof */
++static int find_next_offset( mem_rec_header *mem_rh, long fpos,
++	unsigned int *next_offset, unsigned char *attrib, unsigned int *unique_id )
++{
++	mem_rec_header *temp_mem_rh;
++	unsigned char found = 0;
++	unsigned long found_at;
++
++	found_at=0xFFFFFF;
++	for (temp_mem_rh=mem_rh; temp_mem_rh; temp_mem_rh = temp_mem_rh->next) {
++		if ((temp_mem_rh->offset > fpos) && (temp_mem_rh->offset < found_at)) {
++			found_at = temp_mem_rh->offset;
++			/* *attrib = temp_mem_rh->attrib; */
++			/* *unique_id = temp_mem_rh->unique_id; */
++		}
++		if ((temp_mem_rh->offset == fpos)) {
++			found = 1;
++			*attrib = temp_mem_rh->attrib;
++			*unique_id = temp_mem_rh->unique_id;
++		}
++	}
++	*next_offset = found_at;
++	return found;
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++static void free_mem_rec_header(mem_rec_header **mem_rh) {
++	mem_rec_header *h, *next_h;
++	for (h=*mem_rh; h; h=next_h) {
++		next_h=h->next;
++		free(h);
++	}
++	*mem_rh = NULL;
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++int jpilot_free_db_list( GList **br_list ) {
++	GList *temp_list, *first;
++	buf_rec *br;
++
++	/* Go to first entry in the list */
++	first=NULL;
++	for( temp_list = *br_list; temp_list; temp_list = temp_list->prev ) {
++		first = temp_list;
++	}
++	for (temp_list = first; temp_list; temp_list = temp_list->next) {
++		if (temp_list->data) {
++			br=temp_list->data;
++			if (br->buf) {
++				free(br->buf);
++				temp_list->data=NULL;
++			}
++			free(br);
++		}
++	}
++	g_list_free(*br_list);
++	*br_list=NULL;
++	return 0;
++}
++
++// Shamelessly copied from JPilot (libplugin.c)
++// Read file size.
++int jpilot_get_info_size( FILE *in, int *size ) {
++	RawDBHeader rdbh;
++	DBHeader dbh;
++	unsigned int offset;
++	record_header rh;
++
++	fseek(in, 0, SEEK_SET);
++	fread(&rdbh, sizeof(RawDBHeader), 1, in);
++	if (feof(in)) {
++		// fprintf( stderr, "error reading file in 'jpilot_get_info_size'\n" );
++		return MGU_EOF;
++	}
++
++	raw_header_to_header(&rdbh, &dbh);
++	if (dbh.app_info_offset==0) {
++		*size=0;
++		return MGU_SUCCESS;
++	}
++	if (dbh.sort_info_offset!=0) {
++		*size = dbh.sort_info_offset - dbh.app_info_offset;
++		return MGU_SUCCESS;
++	}
++	if (dbh.number_of_records==0) {
++		fseek(in, 0, SEEK_END);
++		*size=ftell(in) - dbh.app_info_offset;
++		return MGU_SUCCESS;
++	}
++
++	fread(&rh, sizeof(record_header), 1, in);
++	offset = ((rh.Offset[0]*256+rh.Offset[1])*256+rh.Offset[2])*256+rh.Offset[3];
++	*size=offset - dbh.app_info_offset;
++
++	return MGU_SUCCESS;
++}
++
++// Read address file into address list. Based on JPilot's
++// libplugin.c (jp_get_app_info)
++gint jpilot_get_file_info( JPilotFile *pilotFile, unsigned char **buf, int *buf_size ) {
++	FILE *in;
++ 	int num;
++	unsigned int rec_size;
++	RawDBHeader rdbh;
++	DBHeader dbh;
++
++	if( ( !buf_size ) || ( ! buf ) ) {
++		return MGU_BAD_ARGS;
++	}
++
++	*buf = NULL;
++	*buf_size=0;
++
++	if( pilotFile->path ) {
++		in = fopen( pilotFile->path, "r" );
++		if( !in ) {
++			// fprintf( stderr, "can't open %s\n", pilotFile->path );
++			return MGU_OPEN_FILE;
++		}
++	}
++	else {
++		// fprintf( stderr, "file not specified\n" );
++		return MGU_NO_FILE;
++	}
++
++	num = fread( &rdbh, sizeof( RawDBHeader ), 1, in );
++	if( num != 1 ) {
++	  	if( ferror(in) ) {
++  			// fprintf( stderr, "error reading %s\n", pilotFile->path );
++			fclose(in);
++			return MGU_ERROR_READ;
++		}
++	}
++	if (feof(in)) {
++		fclose(in);
++		return MGU_EOF;
++	}
++
++	// Convert header into something recognizable
++	raw_header_to_header(&rdbh, &dbh);
++
++	num = jpilot_get_info_size(in, &rec_size);
++	if (num) {
++		fclose(in);
++		return MGU_ERROR_READ;
++	}
++
++	fseek(in, dbh.app_info_offset, SEEK_SET);
++	*buf = ( char * ) malloc(rec_size);
++	if (!(*buf)) {
++		// fprintf( stderr, "jpilot_get_file_info(): Out of memory\n" );
++		fclose(in);
++		return MGU_OO_MEMORY;
++	}
++	num = fread(*buf, rec_size, 1, in);
++	if (num != 1) {
++		if (ferror(in)) {
++			fclose(in);
++			free(*buf);
++			// fprintf( stderr, "Error reading %s\n", pilotFile->path );
++			return MGU_ERROR_READ;
++		}
++	}
++	fclose(in);
++
++	*buf_size = rec_size;
++
++	return MGU_SUCCESS;
++}
++
++#define	FULLNAME_BUFSIZE   256
++#define	EMAIL_BUFSIZE      256
++// Read address file into address cache. Based on JPilot's
++// jp_read_DB_files (from libplugin.c)
++gint jpilot_read_cache( JPilotFile *pilotFile ) {
++	FILE *in;
++	char *buf;
++	int num_records, recs_returned, i, num, r;
++	unsigned int offset, prev_offset, next_offset, rec_size;
++	int out_of_order;
++	long fpos;  /*file position indicator */
++	unsigned char attrib;
++	unsigned int unique_id;
++	mem_rec_header *mem_rh, *temp_mem_rh, *last_mem_rh;
++	record_header rh;
++	RawDBHeader rdbh;
++	DBHeader dbh;
++	gint retVal;
++	struct Address addr;
++	struct AddressAppInfo *ai;
++	char **addrEnt;
++	int inum, k;
++	gchar fullName[ FULLNAME_BUFSIZE ];
++	gchar bufEMail[ EMAIL_BUFSIZE ];
++	gchar* extID;
++	AddressItem *addrItem = NULL;
++	int *indPhoneLbl;
++	char *labelEntry;
++	GSList *node;
++
++	retVal = MGU_SUCCESS;
++	mem_rh = last_mem_rh = NULL;
++	recs_returned = 0;
++
++	// Pointer to address metadata.
++	ai = & pilotFile->addrInfo;
++
++	// Open file for read
++	if( pilotFile->path ) {
++		in = fopen( pilotFile->path, "r" );
++		if( !in ) {
++			// fprintf( stderr, "can't open %s\n", pilotFile->path );
++			return MGU_OPEN_FILE;
++		}
++	}
++	else {
++		// fprintf( stderr, "file not specified\n" );
++		return MGU_NO_FILE;
++	}
++
++	/* Read the database header */
++	num = fread(&rdbh, sizeof(RawDBHeader), 1, in);
++	if (num != 1) {
++		if (ferror(in)) {
++			// fprintf( stderr, "error reading '%s'\n", pilotFile->path );
++			fclose(in);
++			return MGU_ERROR_READ;
++		}
++		if (feof(in)) {
++	 		return MGU_EOF;
++	 	}
++	}
++
++	raw_header_to_header(&rdbh, &dbh);
++
++	/*Read each record entry header */
++	num_records = dbh.number_of_records;
++	out_of_order = 0;
++	prev_offset = 0;
++
++	for (i=1; i<num_records+1; i++) {
++		num = fread( &rh, sizeof( record_header ), 1, in );
++		if (num != 1) {
++			if (ferror(in)) {
++				// fprintf( stderr, "error reading '%s'\n", pilotFile->path );
++				retVal = MGU_ERROR_READ;
++				break;
++			}
++			if (feof(in)) {
++				return MGU_EOF;
++			}
++		}
++
++		offset = ((rh.Offset[0]*256+rh.Offset[1])*256+rh.Offset[2])*256+rh.Offset[3];
++		if (offset < prev_offset) {
++			out_of_order = 1;
++		}
++		prev_offset = offset;
++
++		temp_mem_rh = (mem_rec_header *)malloc(sizeof(mem_rec_header));
++		if (!temp_mem_rh) {
++			// fprintf( stderr, "jpilot_read_db_file(): Out of memory 1\n" );
++			retVal = MGU_OO_MEMORY;
++			break;
++		}
++
++		temp_mem_rh->next = NULL;
++		temp_mem_rh->rec_num = i;
++		temp_mem_rh->offset = offset;
++		temp_mem_rh->attrib = rh.attrib;
++		temp_mem_rh->unique_id = (rh.unique_ID[0]*256+rh.unique_ID[1])*256+rh.unique_ID[2];
++
++		if (mem_rh == NULL) {
++			mem_rh = temp_mem_rh;
++			last_mem_rh = temp_mem_rh;
++		}
++		else {
++			last_mem_rh->next = temp_mem_rh;
++			last_mem_rh = temp_mem_rh;
++		}
++
++	}	// for( ;; )
++
++	temp_mem_rh = mem_rh;
++
++	if (num_records) {
++		if (out_of_order) {
++			find_next_offset(mem_rh, 0, &next_offset, &attrib, &unique_id);
++		}
++		else {
++			if (mem_rh) {
++				next_offset = mem_rh->offset;
++				attrib = mem_rh->attrib;
++				unique_id = mem_rh->unique_id;
++			}
++		}
++		fseek(in, next_offset, SEEK_SET);
++
++		// Now go load all records		
++		while(!feof(in)) {
++			fpos = ftell(in);
++			if (out_of_order) {
++				find_next_offset(mem_rh, fpos, &next_offset, &attrib, &unique_id);
++			}
++			else {
++				next_offset = 0xFFFFFF;
++				if (temp_mem_rh) {
++					attrib = temp_mem_rh->attrib;
++					unique_id = temp_mem_rh->unique_id;
++					if (temp_mem_rh->next) {
++						temp_mem_rh = temp_mem_rh->next;
++						next_offset = temp_mem_rh->offset;
++					}
++				}
++			}
++			rec_size = next_offset - fpos;
++
++			buf = ( char * ) malloc(rec_size);
++			if (!buf) break;
++			num = fread(buf, rec_size, 1, in);
++			if ((num != 1)) {
++				if (ferror(in)) {
++					// fprintf( stderr, "Error reading %s 5\n", pilotFile );
++					free(buf);
++					retVal = MGU_ERROR_READ;
++					break;
++				}
++			}
++
++			// Retrieve address
++			inum = unpack_Address( & addr, buf, rec_size );
++			if( inum > 0 ) {
++				addrEnt = addr.entry;
++
++				*fullName = *bufEMail = '\0';
++				if( addrEnt[ IND_LABEL_FIRSTNAME ] ) {
++					strcat( fullName, addrEnt[ IND_LABEL_FIRSTNAME ] );
++				}
++
++				if( addrEnt[ IND_LABEL_LASTNAME ] ) {
++					strcat( fullName, " " );
++					strcat( fullName, addrEnt[ IND_LABEL_LASTNAME ] );
++				}
++				g_strchug( fullName );
++				g_strchomp( fullName );
++				extID = g_strdup_printf( "%d", unique_id );
++
++				// Add entry for each email address listed under phone labels.
++				indPhoneLbl = addr.phoneLabel;
++				for( k = 0; k < JPILOT_NUM_ADDR_PHONE; k++ ) {
++					int ind;
++					ind = indPhoneLbl[k];
++					// fprintf( stdout, "%d : %d : %20s : %s\n", k, ind, ai->phoneLabels[ind], addrEnt[3+k] );
++					if( indPhoneLbl[k] == IND_PHONE_EMAIL ) {
++						labelEntry = addrEnt[ OFFSET_PHONE_LABEL + k ];
++						if( labelEntry ) {
++							strcpy( bufEMail, labelEntry );
++							g_strchug( bufEMail );
++							g_strchomp( bufEMail );
++
++							addrItem = mgu_create_address();
++							addrItem->name = g_strdup( fullName );
++							addrItem->address = g_strdup( bufEMail );
++							addrItem->remarks = g_strdup( "" );
++							// addrItem->externalID = g_strdup( extID );
++							mgu_add_cache( pilotFile->addressCache, addrItem );
++						}
++					}
++				}
++
++				// Add entry for each custom label
++				node = pilotFile->labelInd;
++				while( node ) {
++					gint ind;
++					ind = GPOINTER_TO_INT( node->data );
++					if( ind > -1 ) {
++						// fprintf( stdout, "%d : %20s : %s\n", ind, ai->labels[ind], addrEnt[ind] );
++						labelEntry = addrEnt[ind];
++						if( labelEntry ) {
++							strcpy( bufEMail, labelEntry );
++							g_strchug( bufEMail );
++							g_strchomp( bufEMail );
++
++							addrItem = mgu_create_address();
++							addrItem->name = g_strdup( fullName );
++							addrItem->address = g_strdup( bufEMail );
++							addrItem->remarks = g_strdup( ai->labels[ind] );
++							// addrItem->externalID = g_strdup( extID );
++							mgu_add_cache( pilotFile->addressCache, addrItem );
++						}
++
++					}
++
++					node = g_slist_next( node );
++				}
++
++				g_free( extID );
++				extID = NULL;
++			}
++			recs_returned++;
++		}
++	}
++	fclose(in);
++ 	free_mem_rec_header(&mem_rh);
++	return retVal;
++}
++
++/*
++* Read metadata from file.
++*/
++gint jpilot_read_metadata( JPilotFile *pilotFile ) {
++	gint retVal;
++	unsigned int rec_size;
++	unsigned char *buf;
++	int num;
++
++	g_return_if_fail( pilotFile != NULL );
++
++	pilotFile->readMetadata = FALSE;
++
++	// Read file info
++	retVal = jpilot_get_file_info( pilotFile, &buf, &rec_size);
++	if( retVal != MGU_SUCCESS ) {
++		return retVal;
++	}
++
++	num = unpack_AddressAppInfo( &pilotFile->addrInfo, buf, rec_size );
++	if( buf ) {
++		free(buf);
++	}
++	if( num <= 0 ) {
++		// fprintf( stderr, "error reading '%s'\n", pilotFile->path );
++		return MGU_ERROR_READ;
++	}
++
++	pilotFile->readMetadata = TRUE;
++
++	return MGU_SUCCESS;
++}
++
++/*
++* Setup labels and indexes from metadata.
++* Return: TRUE is setup successfully.
++*/
++gboolean jpilot_setup_labels( JPilotFile *pilotFile ) {
++	gboolean retVal = FALSE;
++	struct AddressAppInfo *ai;
++	GSList *node;
++
++	g_return_if_fail( pilotFile != NULL );
++
++	// Release indexes
++	node = pilotFile->labelInd;
++	while( node ) {
++		node->data = NULL;
++		node = g_slist_next( node );
++	}
++	pilotFile->labelInd = NULL;
++
++	if( pilotFile->readMetadata ) {
++		ai = & pilotFile->addrInfo;
++		node = pilotFile->customLabels;
++		while( node ) {
++			gchar *lbl, *labelName;
++			int i;
++			gint ind;
++			ind = -1;
++			lbl = node->data;
++			for( i = 0; i < JPILOT_NUM_LABELS; i++ ) {
++				labelName = ai->labels[i];
++				if( g_strcasecmp( labelName, lbl ) == 0 ) {
++					ind = i;
++					break;
++				}
++			}
++			pilotFile->labelInd = g_slist_append( pilotFile->labelInd, GINT_TO_POINTER(ind) );
++			node = g_slist_next( node );
++		}
++		retVal = TRUE;
++	}
++	return retVal;
++}
++
++/*
++* Load list with character strings of label names.
++*/
++GSList *jpilot_load_label( JPilotFile *pilotFile, GSList *labelList ) {
++	int i;
++	g_return_if_fail( pilotFile != NULL );
++	if( pilotFile->readMetadata ) {
++		struct AddressAppInfo *ai = & pilotFile->addrInfo;
++		for( i = 0; i < JPILOT_NUM_LABELS; i++ ) {
++			gchar *labelName = ai->labels[i];
++			if( labelName ) {
++				labelList = g_slist_append( labelList, g_strdup( labelName ) );
++			}
++			else {
++				labelList = g_slist_append( labelList, g_strdup( "" ) );
++			}
++		}
++	}
++	return labelList;
++}
++
++/*
++* Load list with character strings of category names.
++*/
++GSList *jpilot_load_category( JPilotFile *pilotFile, GSList *catList ) {
++	int i;
++	g_return_if_fail( pilotFile != NULL );
++	if( pilotFile->readMetadata ) {
++		struct AddressAppInfo *ai = & pilotFile->addrInfo;
++		struct CategoryAppInfo *cat = &	ai->category;
++		for( i = 0; i < JPILOT_NUM_CATEG; i++ ) {
++			gchar *catName = cat->name[i];
++			if( catName ) {
++				catList = g_slist_append( catList, g_strdup( catName ) );
++			}
++			else {
++				catList = g_slist_append( catList, g_strdup( "" ) );
++			}
++		}
++	}
++	return catList;
++}
++
++/*
++* Load list with character strings of phone label names.
++*/
++GSList *jpilot_load_phone_label( JPilotFile *pilotFile, GSList *labelList ) {
++	int i;
++	g_return_if_fail( pilotFile != NULL );
++	if( pilotFile->readMetadata ) {
++		struct AddressAppInfo *ai = & pilotFile->addrInfo;
++		for( i = 0; i < JPILOT_NUM_PHONELABELS; i++ ) {
++			gchar	*labelName = ai->phoneLabels[i];
++			if( labelName ) {
++				labelList = g_slist_append( labelList, g_strdup( labelName ) );
++			}
++			else {
++				labelList = g_slist_append( labelList, g_strdup( "" ) );
++			}
++		}
++	}
++	return labelList;
++}
++
++/*
++* Load list with character strings of label names. Only none blank names
++* are loaded.
++*/
++GList *jpilot_load_custom_label( JPilotFile *pilotFile, GList *labelList ) {
++	int i;
++	g_return_if_fail( pilotFile != NULL );
++
++	if( pilotFile->readMetadata ) {
++		struct AddressAppInfo *ai = & pilotFile->addrInfo;
++		for( i = 0; i < NUM_CUSTOM_LABEL; i++ ) {
++			gchar *labelName = ai->labels[i+IND_CUSTOM_LABEL];
++			if( labelName ) {
++				g_strchomp( labelName );
++				g_strchug( labelName );
++				if( *labelName != '\0' ) {
++					labelList = g_list_append( labelList, g_strdup( labelName ) );
++				}
++			}
++		}
++	}
++	return labelList;
++}
++
++// ============================================================================================
++/*
++* Read file into list. Main entry point
++* Return: TRUE if file read successfully.
++*/
++// ============================================================================================
++gint jpilot_read_file( JPilotFile *pilotFile ) {
++	gint retVal = MGU_SUCCESS;
++	g_return_if_fail( pilotFile != NULL );
++	if( mgu_check_file( pilotFile->addressCache, pilotFile->path ) ) {
++		mgu_clear_cache( pilotFile->addressCache );
++		retVal = jpilot_read_metadata( pilotFile );
++		if( retVal == MGU_SUCCESS ) {
++			jpilot_setup_labels( pilotFile );
++			retVal = jpilot_read_cache( pilotFile );
++			if( retVal == MGU_SUCCESS ) {
++				mgu_mark_cache( pilotFile->addressCache, pilotFile->path );
++				pilotFile->addressCache->modified = FALSE;
++				pilotFile->addressCache->dataRead = TRUE;
++			}
++		}
++	}
++	return retVal;
++}
++
++/*
++* Return link list of address items.
++* Return: TRUE if file read successfully.
++*/
++GList *jpilot_get_address_list( JPilotFile *pilotFile ) {
++	g_return_if_fail( pilotFile != NULL );
++	return pilotFile->addressCache->addressList;
++}
++
++/*
++* Check label list for specified label.
++*/
++gint jpilot_check_label( struct AddressAppInfo *ai, gchar *lblCheck ) {
++	int i;
++	gchar	*lblName;
++	if( lblCheck == NULL ) return -1;
++	if( strlen( lblCheck ) < 1 ) return -1;
++	for( i = 0; i < JPILOT_NUM_LABELS; i++ ) {
++		lblName = ai->labels[i];
++		if( lblName ) {
++			if( strlen( lblName ) ) {
++				if( g_strcasecmp( lblName, lblCheck ) == 0 ) return i;
++			}
++		}
++	}
++	return -2;
++}
++
++/*
++* Validate that all parameters specified.
++* Return: TRUE if data is good.
++*/
++gboolean jpilot_validate( const JPilotFile *pilotFile ) {
++	gboolean retVal;
++	g_return_if_fail( pilotFile != NULL );
++
++	retVal = TRUE;
++	if( pilotFile->path ) {
++		if( strlen( pilotFile->path ) < 1 ) retVal = FALSE;
++	}
++	else {
++		retVal = FALSE;
++	}
++	if( pilotFile->name ) {
++		if( strlen( pilotFile->name ) < 1 ) retVal = FALSE;
++	}
++	else {
++		retVal = FALSE;
++	}
++	return retVal;
++}
++
++#define WORK_BUFLEN 1024
++
++/*
++* Attempt to find a valid JPilot file.
++* Return: Filename, or home directory if not found, or empty string if
++* no home. Filename should be g_free() when done.
++*/
++gchar *jpilot_find_pilotdb( void ) {
++	gchar *homedir;
++	gchar str[ WORK_BUFLEN ];
++	gint len;
++	FILE *fp;
++
++	homedir = g_get_home_dir();
++	if( ! homedir ) return g_strdup( "" );
++
++	strcpy( str, homedir );
++	len = strlen( str );
++	if( len > 0 ) {
++		if( str[ len-1 ] != G_DIR_SEPARATOR ) {
++			str[ len ] = G_DIR_SEPARATOR;
++			str[ ++len ] = '\0';
++		}
++	}
++	strcat( str, JPILOT_DBHOME_DIR );
++	strcat( str, G_DIR_SEPARATOR_S );
++	strcat( str, JPILOT_DBHOME_FILE );
++
++	// Attempt to open
++	if( ( fp = fopen( str, "r" ) ) != NULL ) {
++		fclose( fp );
++	}
++	else {
++		// Truncate filename
++		str[ len ] = '\0';
++	}
++	return g_strdup( str );
++}
++
++/*
++* Attempt to read file, testing for valid JPilot format.
++* Return: TRUE if file appears to be valid format.
++*/
++gint jpilot_test_read_file( const gchar *fileSpec ) {
++	JPilotFile *pilotFile;
++	gint retVal;
++	if( fileSpec ) {
++		pilotFile = jpilot_create_path( fileSpec );
++		retVal = jpilot_read_metadata( pilotFile );
++		jpilot_free( pilotFile );
++		pilotFile = NULL;
++	}
++	else {
++		retVal = MGU_NO_FILE;
++	}
++	return retVal;
++}
++
++/*
++* Check whether label is in custom labels.
++* Return: TRUE if found.
++*/
++gboolean jpilot_test_custom_label( JPilotFile *pilotFile, const gchar *labelName ) {
++	gboolean retVal;
++	GSList *node;
++	g_return_if_fail( pilotFile != NULL );
++
++	retVal = FALSE;
++	if( labelName ) {
++		node = pilotFile->customLabels;
++		while( node ) {
++			if( g_strcasecmp( labelName, node->data ) == 0 ) {
++				retVal = TRUE;
++				break;
++			}
++			node = g_slist_next( node );
++		}
++	}
++	return retVal;
++}
++
++/*
++* Test whether pilot link library installed.
++* Return: TRUE if library available.
++*/
++gboolean jpilot_test_pilot_lib() {
++	void *handle, *fun;
++
++	handle = dlopen( PILOT_LINK_LIB_NAME, RTLD_LAZY );
++	if( ! handle ) {
++		return FALSE;
++	}
++
++	// Test for symbols we need
++	fun = dlsym( handle, "unpack_Address" );
++	if( ! fun ) {
++		dlclose( handle );
++		return FALSE;
++	}
++
++	fun = dlsym( handle, "unpack_AddressAppInfo" );
++	if( ! fun ) {
++		dlclose( handle );
++		return FALSE;
++	}
++	dlclose( handle );
++	return TRUE;
++}
++
++#endif	/* USE_JPILOT */
++
++/*
++* End of Source.
++*/
+diff -Naur ./src/jpilot.h ../sylpheed-0.4.66adr/src/jpilot.h
+--- ./src/jpilot.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/jpilot.h	Wed May  9 15:24:12 2001
+@@ -0,0 +1,163 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Definitions for accessing JPilot database files.
++ * JPilot is Copyright(c) by Judd Montgomery.
++ * Visit http://www.jpilot.org for more details.
++ */
++
++#ifndef __JPILOT_H__
++#define __JPILOT_H__
++
++#ifdef USE_JPILOT
++
++#include <pi-address.h>
++
++#include <time.h>
++#include <stdio.h>
++#include <glib.h>
++
++#include "mgutils.h"
++
++typedef struct _JPilotFile JPilotFile;
++
++struct _JPilotFile {
++	gchar        *name;
++	FILE         *file;
++	gchar        *path;
++	AddressCache *addressCache;
++	struct AddressAppInfo addrInfo;
++	gboolean     readMetadata;
++	GSList       *customLabels;
++	GSList       *labelInd;
++};
++
++// Limits
++#define JPILOT_NUM_LABELS	22	// Number of labels
++#define JPILOT_NUM_PHONELABELS  8 	// Number of phone number labels
++#define JPILOT_NUM_CATEG	16	// Number of categories
++#define JPILOT_LEN_LABEL	15	// Max length of label
++#define JPILOT_LEN_CATEG	15	// Max length of category
++#define JPILOT_NUM_ADDR_PHONE   5	// Number of phone entries a person can have
++
++// Shamelessly copied from JPilot (libplugin.h)
++typedef struct {
++	unsigned char db_name[32];
++	unsigned char flags[2];
++	unsigned char version[2];
++	unsigned char creation_time[4];
++	unsigned char modification_time[4];
++	unsigned char backup_time[4];
++	unsigned char modification_number[4];
++	unsigned char app_info_offset[4];
++	unsigned char sort_info_offset[4];
++	unsigned char type[4];/*Database ID */
++	unsigned char creator_id[4];/*Application ID */
++	unsigned char unique_id_seed[4];
++	unsigned char next_record_list_id[4];
++	unsigned char number_of_records[2];
++} RawDBHeader;
++
++// Shamelessly copied from JPilot (libplugin.h)
++typedef struct {
++	char db_name[32];
++	unsigned int flags;
++	unsigned int version;
++	time_t creation_time;
++	time_t modification_time;
++	time_t backup_time;
++	unsigned int modification_number;
++	unsigned int app_info_offset;
++	unsigned int sort_info_offset;
++	char type[5];/*Database ID */
++	char creator_id[5];/*Application ID */
++	char unique_id_seed[5];
++	unsigned int next_record_list_id;
++	unsigned int number_of_records;
++} DBHeader;
++
++// Shamelessly copied from JPilot (libplugin.h)
++typedef struct {
++	unsigned char Offset[4];  /*4 bytes offset from BOF to record */
++	unsigned char attrib;
++	unsigned char unique_ID[3];
++} record_header;
++
++// Shamelessly copied from JPilot (libplugin.h)
++typedef struct mem_rec_header_s {
++	unsigned int rec_num;
++	unsigned int offset;
++	unsigned int unique_id;
++	unsigned char attrib;
++	struct mem_rec_header_s *next;
++} mem_rec_header;
++
++// Shamelessly copied from JPilot (libplugin.h)
++#define SPENT_PC_RECORD_BIT	256
++
++typedef enum {
++	PALM_REC = 100L,
++	MODIFIED_PALM_REC = 101L,
++	DELETED_PALM_REC = 102L,
++	NEW_PC_REC = 103L,
++	DELETED_PC_REC = SPENT_PC_RECORD_BIT + 104L,
++	DELETED_DELETED_PALM_REC = SPENT_PC_RECORD_BIT + 105L
++} PCRecType;
++
++// Shamelessly copied from JPilot (libplugin.h)
++typedef struct {
++	PCRecType rt;
++	unsigned int unique_id;
++	unsigned char attrib;
++	void *buf;
++	int size;
++} buf_rec;
++
++/* Function prototypes */
++JPilotFile *jpilot_create();
++JPilotFile *jpilot_create_path( const gchar *path );
++void jpilot_free( JPilotFile *pilotFile );
++void jpilot_force_refresh( JPilotFile *pilotFile );
++void jpilot_print_file( JPilotFile *jpilotFile, FILE *stream );
++void jpilot_print_list( GSList *list, FILE *stream );
++gint jpilot_read_file( JPilotFile *pilotFile );
++
++GList *jpilot_get_address_list( JPilotFile *pilotFile );
++GSList *jpilot_load_label( JPilotFile *pilotFile, GSList *labelList );
++GSList *jpilot_load_category( JPilotFile *pilotFile, GSList *catList );
++GSList *jpilot_load_phone_label( JPilotFile *pilotFile, GSList *labelList );
++GList *jpilot_load_custom_label( JPilotFile *pilotFile, GList *labelList );
++
++void jpilot_set_file( JPilotFile* pilotFile, const gchar *path );
++gboolean jpilot_validate( const JPilotFile *pilotFile );
++gchar *jpilot_find_pilotdb( void );
++gint jpilot_test_read_file( const gchar *fileSpec );
++
++void jpilot_clear_custom_labels( JPilotFile *pilotFile );
++void jpilot_add_custom_label( JPilotFile *pilotFile, const gchar *labelName );
++GList *jpilot_get_custom_labels( JPilotFile *pilotFile );
++gboolean jpilot_test_custom_label( JPilotFile *pilotFile, const gchar *labelName );
++gboolean jpilot_setup_labels( JPilotFile *pilotFile );
++gboolean jpilot_test_pilot_lib();
++
++#endif /* USE_JPILOT */
++
++#endif /* __JPILOT_H__ */
++
+diff -Naur ./src/mgutils.c ../sylpheed-0.4.66adr/src/mgutils.c
+--- ./src/mgutils.c	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/mgutils.c	Wed May  9 15:24:24 2001
+@@ -0,0 +1,278 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * General functions for create common address book entries.
++ */
++
++#include <sys/stat.h>
++#include <stdio.h>
++#include <glib.h>
++
++#include "addressitem.h"
++#include "mgutils.h"
++
++/*
++* Create new address item.
++*/
++AddressItem *mgu_create_address( void ) {
++	AddressItem *item;
++	item = g_new( AddressItem, 1 );
++	ADDRESS_OBJECT(item)->type = ADDR_ITEM;
++	item->name = NULL;
++	item->address = NULL;
++	item->remarks = NULL;
++	// item->externalID = NULL;
++	return item;
++}
++
++/*
++* Free address item.
++*/
++void mgu_free_address( AddressItem *item ) {
++	g_return_if_fail( item != NULL );
++
++	/* Free internal stuff */
++	g_free( item->name );
++	g_free( item->address );
++	g_free( item->remarks );
++	// g_free( item->externalID );
++	item->name = NULL;
++	item->address = NULL;
++	item->remarks = NULL;
++	// item->externalID = NULL;
++
++	/* Now release item */
++	g_free( item );
++}
++
++/*
++* Refresh internal variables to force a reload.
++*/
++void mgu_refresh_cache( AddressCache *cache ) {
++	cache->dataRead = FALSE;
++	cache->modified = TRUE;
++	cache->modifyTime = 0;
++}
++
++/*
++* Clear the cache.
++*/
++void mgu_clear_cache( AddressCache *cache ) {
++	AddressItem *item;
++	GList *node;
++	g_return_if_fail( cache != NULL );
++
++	/* Free data in the list */
++	node = cache->addressList;
++	while( node ) {
++		item = node->data;
++		mgu_free_address( item );
++		item = NULL;
++		node = g_list_next( node );
++	}
++
++	/* Now release linked list object */
++	g_list_free( cache->addressList );
++	cache->addressList = NULL;
++	mgu_refresh_cache( cache );
++}
++
++/*
++* Create new cache.
++*/
++AddressCache *mgu_create_cache( void ) {
++	AddressCache *cache;
++	cache = g_new( AddressCache, 1 );
++	cache->addressList = NULL;
++	cache->dataRead = FALSE;
++	cache->modified = FALSE;
++	cache->modifyTime = 0;
++	return cache;
++}
++
++/*
++* Create new address item.
++*/
++void mgu_free_cache( AddressCache *cache ) {
++	mgu_clear_cache( cache );
++	cache->addressList = NULL;
++}
++
++/*
++* Print address item.
++*/
++void mgu_print_address( AddressItem *item, FILE *stream ) {
++	g_return_if_fail( item != NULL );
++	fprintf( stream, "addr item:\n" );
++	fprintf( stream, "\tname: '%s'\n", item->name );
++	fprintf( stream, "\taddr: '%s'\n", item->address );
++	fprintf( stream, "\trems: '%s'\n", item->remarks );
++	// fprintf( stream, "\tid  : '%s'\n", item->externalID );
++	fprintf( stream, "---\n" );
++}
++
++/*
++* Print address cache.
++*/
++void mgu_print_cache( AddressCache *cache, FILE *stream ) {
++	GList *node;
++	g_return_if_fail( cache != NULL );
++	fprintf( stream, "AddressCache:\n" );
++	fprintf( stream, "modified : %s\n", cache->modified ? "yes" : "no" );
++	fprintf( stream, "data read: %s\n", cache->dataRead ? "yes" : "no" );
++
++	/* Now process the list */
++	node = cache->addressList;
++	while( node ) {
++		gpointer *gptr;
++		AddressItem *item;
++		gptr = node->data;
++		item = ( AddressItem * ) gptr;
++		mgu_print_address( item, stream );		
++		node = g_list_next( node );
++	}
++}
++
++/*
++* Dump linked list of character strings (for debug).
++*/
++void mgu_print_list( GSList *list, FILE *stream ) {
++	GSList *node = list;
++	while( node ) {
++		fprintf( stream, "\t- >%s<\n", node->data );
++		node = g_slist_next( node );
++	}
++}
++
++/*
++* Dump linked list of character strings (for debug).
++*/
++void mgu_print_dlist( GList *list, FILE *stream ) {
++	GList *node = list;
++	while( node ) {
++		fprintf( stream, "\t- >%s<\n", node->data );
++		node = g_list_next( node );
++	}
++}
++
++/*
++* Check whether file has changed by comparing with cache.
++* return:	TRUE if file has changed.
++*/
++gboolean mgu_check_file( AddressCache *cache, gchar *path ) {
++	gboolean retVal;
++	struct stat filestat;
++	retVal = TRUE;
++	if( path ) {
++		if( 0 == lstat( path, &filestat ) ) {
++			if( filestat.st_mtime == cache->modifyTime ) retVal = FALSE;
++		}
++	}
++	return retVal;
++}
++
++/*
++* Save file time to cache.
++* return:	TRUE if time marked.
++*/
++gboolean mgu_mark_cache( AddressCache *cache, gchar *path ) {
++	gboolean retVal = FALSE;
++	struct stat filestat;
++	if( path ) {
++		if( 0 == lstat( path, &filestat ) ) {
++			cache->modifyTime = filestat.st_mtime;
++			retVal = TRUE;
++		}
++	}
++	return retVal;
++}
++
++/*
++* Free linked list of character strings.
++*/
++void mgu_free_list( GSList *list ) {
++	GSList *node = list;
++	while( node ) {
++		g_free( node->data );
++		node->data = NULL;
++		node = g_slist_next( node );
++	}
++	g_slist_free( list );
++}
++
++/*
++* Free linked list of character strings.
++*/
++void mgu_free_dlist( GList *list ) {
++	GList *node = list;
++	while( node ) {
++		g_free( node->data );
++		node->data = NULL;
++		node = g_list_next( node );
++	}
++	g_list_free( list );
++}
++
++/*
++* Coalesce linked list of characaters into one long string.
++*/
++gchar *mgu_list_coalesce( GSList *list ) {
++	gchar *str = NULL;
++	gchar *buf = NULL;
++	gchar *start = NULL;
++	GSList *node = NULL;
++	gint len;
++
++	if( ! list ) return NULL;
++
++	// Calculate maximum length of text
++	len = 0;
++	node = list;
++	while( node ) {
++		str = node->data;
++		len += 1 + strlen( str );
++		node = g_slist_next( node );
++	}
++
++	// Create new buffer.
++	buf = g_new( gchar, len+1 );
++	start = buf;
++	node = list;
++	while( node ) {
++		str = node->data;
++		len = strlen( str );
++		strcpy( start, str );
++		start += len;
++		node = g_slist_next( node );
++	}
++	return buf;
++}
++
++/*
++* Add address item to cache.
++*/
++void mgu_add_cache( AddressCache *cache, AddressItem *addrItem ) {
++	cache->addressList = g_list_append( cache->addressList, addrItem );
++	cache->modified = TRUE;
++}
++
++/*
++* End of Source.
++*/
+diff -Naur ./src/mgutils.h ../sylpheed-0.4.66adr/src/mgutils.h
+--- ./src/mgutils.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/mgutils.h	Wed May  9 15:24:24 2001
+@@ -0,0 +1,70 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * General definitions for common address book entries.
++ */
++
++#ifndef __MGUTILS_H__
++#define __MGUTILS_H__
++
++#include <time.h>
++#include <stdio.h>
++#include <glib.h>
++
++#include "addressitem.h"
++
++// Error codes
++#define	MGU_SUCCESS    0
++#define MGU_BAD_ARGS   -1
++#define MGU_NO_FILE    -2
++#define MGU_OPEN_FILE  -3
++#define	MGU_ERROR_READ -4
++#define	MGU_EOF        -5
++#define	MGU_OO_MEMORY  -6
++#define MGU_BAD_FORMAT -7
++
++// Address cache
++typedef struct _AddressCache AddressCache;
++struct _AddressCache {
++	GList    *addressList;
++	gboolean dataRead;
++	gboolean modified;
++	time_t   modifyTime;
++};
++
++// Function prototypes
++AddressItem *mgu_create_address( void );
++void mgu_free_address( AddressItem *item );
++void mgu_refresh_cache( AddressCache *cache );
++void mgu_clear_cache( AddressCache *cache );
++AddressCache *mgu_create_cache( void );
++void mgu_free_cache( AddressCache *cache );
++void mgu_print_address( AddressItem *item, FILE *stream );
++void mgu_print_cache( AddressCache *cache, FILE *stream );
++void mgu_print_list( GSList *list, FILE *stream );
++void mgu_print_dlist( GList *list, FILE *stream );
++gboolean mgu_check_file( AddressCache *cache, gchar *path );
++gboolean mgu_mark_cache( AddressCache *cache, gchar *path );
++void mgu_free_list( GSList *list );
++void mgu_free_dlist( GList *list );
++gchar *mgu_list_coalesce( GSList *list );
++void mgu_add_cache( AddressCache *cache, AddressItem *addrItem );
++
++#endif /* __MGUTILS_H__ */
+diff -Naur ./src/vcard.c ../sylpheed-0.4.66adr/src/vcard.c
+--- ./src/vcard.c	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/vcard.c	Wed May  9 15:24:17 2001
+@@ -0,0 +1,678 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Functions necessary to access VCard files. VCard files are used
++ * by GnomeCard for addressbook, and Netscape for sending business
++ * card information. Refer to RFC2426 for more information.
++ */
++
++#include <sys/stat.h>
++#include <glib.h>
++
++#include "mgutils.h"
++#include "vcard.h"
++
++#define GNOMECARD_DIR     ".gnome"
++#define GNOMECARD_FILE    "GnomeCard"
++#define GNOMECARD_SECTION "[file]"
++#define GNOMECARD_PARAM   "open"
++
++#define VCARD_TEST_LINES  200
++
++/*
++* Specify name to be used.
++*/
++void vcard_set_name( VCardFile* cardFile, const gchar *name ) {
++	/* Copy file name */
++	if( cardFile->name ) g_free( cardFile->name );
++	if( name ) cardFile->name = g_strdup( name );
++	g_strstrip( cardFile->name );
++}
++
++/*
++* Specify file to be used.
++*/
++void vcard_set_file( VCardFile* cardFile, const gchar *path ) {
++	mgu_refresh_cache( cardFile->addressCache );
++
++	/* Copy file path */
++	if( cardFile->path ) g_free( cardFile->path );
++	if( path ) cardFile->path = g_strdup( path );
++	g_strstrip( cardFile->path );
++}
++
++/*
++* Create new cardfile object.
++*/
++VCardFile *vcard_create() {
++	VCardFile *cardFile;
++	cardFile = g_new( VCardFile, 1 );
++	cardFile->name = NULL;
++	cardFile->path = NULL;
++	cardFile->file = NULL;
++	cardFile->bufptr = cardFile->buffer;
++	cardFile->addressCache = mgu_create_cache();
++	return cardFile;
++}
++
++/*
++* Refresh internal variables to force a file read.
++*/
++void vcard_force_refresh( VCardFile *cardFile ) {
++	mgu_refresh_cache( cardFile->addressCache );
++}
++
++/*
++* Create new cardfile object for specified file.
++*/
++VCardFile *vcard_create_path( const gchar *path ) {
++	VCardFile *cardFile;
++	cardFile = vcard_create();
++	vcard_set_file(cardFile, path );
++	return cardFile;
++}
++
++/*
++* Free up cardfile object by releasing internal memory.
++*/
++void vcard_free( VCardFile *cardFile ) {
++	g_return_if_fail( cardFile != NULL );
++
++	// fprintf( stdout, "freeing... VCardFile\n" );
++
++	/* Close file */
++	if( cardFile->file ) fclose( cardFile->file );
++
++	/* Free internal stuff */
++	g_free( cardFile->name );
++	g_free( cardFile->path );
++
++	/* Clear cache */
++	mgu_clear_cache( cardFile->addressCache );
++	mgu_free_cache( cardFile->addressCache );
++
++	// Clear pointers
++	cardFile->file = NULL;
++	cardFile->name = NULL;
++	cardFile->path = NULL;
++	cardFile->addressCache = NULL;
++
++	/* Now release file object */
++	g_free( cardFile );
++
++	// fprintf( stdout, "freeing... VCardFile done\n" );
++
++}
++
++/*
++* Display object to specified stream.
++*/
++void vcard_print_file( VCardFile *cardFile, FILE *stream ) {
++	GSList *node;
++	g_return_if_fail( cardFile != NULL );
++	fprintf( stream, "VCardFile:\n" );
++	fprintf( stream, "     name: '%s'\n", cardFile->name );
++	fprintf( stream, "file spec: '%s'\n", cardFile->path );
++	mgu_print_cache( cardFile->addressCache, stream );
++}
++
++/*
++* Open file for read.
++* return:	TRUE if file opened successfully.
++*/
++gint vcard_open_file( VCardFile* cardFile ) {
++	g_return_if_fail( cardFile != NULL );
++
++	// fprintf( stdout, "Opening file\n" );
++	cardFile->addressCache->dataRead = FALSE;
++	if( cardFile->path ) {
++		cardFile->file = fopen( cardFile->path, "r" );
++		if( ! cardFile->file ) {
++			// fprintf( stderr, "can't open %s\n", cardFile->path );
++			return MGU_OPEN_FILE;
++		}
++	}
++	else {
++		// fprintf( stderr, "file not specified\n" );
++		return MGU_NO_FILE;
++	}
++
++	/* Setup a buffer area */
++	cardFile->buffer[0] = '\0';
++	cardFile->bufptr = cardFile->buffer;
++	return MGU_SUCCESS;
++}
++
++/*
++* Close file.
++*/
++void vcard_close_file( VCardFile *cardFile ) {
++	g_return_if_fail( cardFile != NULL );
++	if( cardFile->file ) fclose( cardFile->file );
++	cardFile->file = NULL;
++}
++
++/*
++* Read line of text from file.
++* Return: ptr to buffer where line starts.
++*/
++gchar *vcard_read_line( VCardFile *cardFile ) {
++	while( *cardFile->bufptr == '\n' || *cardFile->bufptr == '\0' ) {
++		if( fgets( cardFile->buffer, VCARDBUFSIZE, cardFile->file ) == NULL )
++			return NULL;
++		g_strstrip( cardFile->buffer );
++		cardFile->bufptr = cardFile->buffer;
++	}
++	return cardFile->bufptr;
++}
++
++/*
++* Read line of text from file.
++* Return: ptr to buffer where line starts.
++*/
++gchar *vcard_get_line( VCardFile *cardFile ) {
++	gchar buf[ VCARDBUFSIZE ];
++	gchar *start, *end;
++	gint len;
++
++	if (vcard_read_line( cardFile ) == NULL ) {
++		buf[0] = '\0';
++		return;
++	}
++
++	/* Copy into private buffer */
++	start = cardFile->bufptr;
++	len = strlen( start );
++	end = start + len;
++	strncpy( buf, start, len );
++	buf[ len ] = '\0';
++	g_strstrip(buf);
++	cardFile->bufptr = end + 1;
++
++	/* Return a copy of buffer */	
++	return g_strdup( buf );
++}
++
++/*
++* Free linked lists of character strings.
++*/
++void vcard_free_lists( GSList *listName, GSList *listAddr, GSList *listRem, GSList* listID ) {
++	mgu_free_list( listName );
++	mgu_free_list( listAddr );
++	mgu_free_list( listRem );
++	mgu_free_list( listID );
++}
++
++/*
++* Read quoted-printable text, which may span several lines into one long string.
++* Param: cardFile - object.
++* Param: tagvalue - will be placed into the linked list.
++*/
++gchar *vcard_read_qp( VCardFile *cardFile, char *tagvalue ) {
++	GSList *listQP = NULL;
++	gint len = 0;
++	gchar *line = tagvalue;
++	while( line ) {
++		listQP = g_slist_append( listQP, line );
++		len = strlen( line ) - 1;
++		if( len > 0 ) {
++			if( line[ len ] != '=' ) break;
++			line[ len ] = '\0';
++		}
++		line = vcard_get_line( cardFile );
++	}
++
++	// Coalesce linked list into one long buffer.
++	line = mgu_list_coalesce( listQP );
++
++	// Clean up
++	mgu_free_list( listQP );
++	listQP = NULL;
++	return line;
++}
++
++/*
++* Parse tag name from line buffer.
++* Return: Buffer containing the tag name, or NULL if no delimiter char found.
++*/
++gchar *vcard_get_tagname( char* line, gchar dlm ) {
++	gint len = 0;
++	gchar *tag = NULL;
++	gchar *lptr = line;
++	while( *lptr++ ) {
++		if( *lptr == dlm ) {
++			len = lptr - line;
++			tag = g_strndup( line, len+1 );
++			tag[ len ] = '\0';
++			g_strdown( tag );
++			return tag;
++		}
++	}
++	return tag;
++}
++
++/*
++* Parse tag value from line buffer.
++* Return: Buffer containing the tag value. Empty string is returned if
++* no delimiter char found.
++*/
++gchar *vcard_get_tagvalue( gchar* line, gchar dlm ) {
++	gchar *value = NULL;
++	gchar *start = NULL;
++	gchar *lptr;
++	gint len = 0;
++
++	for( lptr = line; *lptr; lptr++ ) {
++		if( *lptr == dlm ) {
++			if( ! start )
++				start = lptr + 1;
++		}
++	}
++	if( start ) {
++		len = lptr - start;
++		value = g_strndup( start, len+1 );
++	}
++	else {
++		// Ensure that we get an empty string
++		value = g_strndup( "", 1 );
++	}
++	value[ len ] = '\0';
++	return value;
++}
++
++/*
++* Dump linked lists of character strings (for debug).
++*/
++void vcard_dump_lists( GSList *listName, GSList *listAddr, GSList *listRem, GSList *listID, FILE *stream ) {
++	fprintf( stream, "dump name\n" );
++	fprintf( stream, "------------\n" );
++	mgu_print_list( listName, stdout );
++	fprintf( stream, "dump address\n" );
++	fprintf( stream, "------------\n" );
++	mgu_print_list( listAddr, stdout );
++	fprintf( stream, "dump remarks\n" );
++	fprintf( stdout, "------------\n" );
++	mgu_print_list( listRem, stdout );
++	fprintf( stream, "dump id\n" );
++	fprintf( stdout, "------------\n" );
++	mgu_print_list( listID, stdout );
++}
++
++/*
++* Build an address list entry and append to list of address items.
++*/
++void vcard_build_items( VCardFile *cardFile, GSList *listName, GSList *listAddr, GSList *listRem, GSList *listID ) {
++	AddressItem *addrItem = NULL;
++	GSList *nodeName = listName;
++	GSList *nodeID = listID;
++	while( nodeName ) {
++		GSList *nodeAddress = listAddr;
++		GSList *nodeRemarks = listRem;
++		while( nodeAddress ) {
++			addrItem = mgu_create_address();
++			addrItem->name = g_strdup( nodeName->data );
++			addrItem->address = g_strdup( nodeAddress->data );
++			if( nodeRemarks ) {
++				if( nodeRemarks->data ) {
++					addrItem->remarks = g_strdup( nodeRemarks->data );
++				}
++				else {
++					addrItem->remarks = g_strdup( "" );
++				}
++			}
++			else {
++					addrItem->remarks = g_strdup( "" );
++			}
++/*
++			if( nodeID ) {
++				if( nodeID->data ) {
++					addrItem->externalID = g_strdup( nodeID->data );
++				}
++				else {
++					addrItem->externalID = g_strdup( "" );
++				}
++			}
++			else {
++				addrItem->externalID = g_strdup( "" );
++			}
++*/
++			mgu_add_cache( cardFile->addressCache, addrItem );
++
++			nodeAddress = g_slist_next( nodeAddress );
++			nodeRemarks = g_slist_next( nodeRemarks );
++		}
++		nodeName = g_slist_next( nodeName );
++		nodeID = g_slist_next( nodeID );
++	}
++	addrItem = NULL;
++}
++
++// Unescape characters in quoted-printable string.
++void vcard_unescape_qp( gchar *value ) {
++	gchar *ptr, *src, *dest;
++	int d, v;
++	char ch;
++	gboolean gotch;
++	ptr = value;
++	while( *ptr ) {
++		gotch = FALSE;
++		if( *ptr == '=' ) {
++			v = 0;
++			ch = *(ptr + 1);
++			if( ch ) {
++				if( ch > '0' && ch < '8' ) v = ch - '0';
++			}
++			d = -1;
++			ch = *(ptr + 2);
++			if( ch ) {
++				if( ch > '\x60' ) ch -= '\x20';
++				if( ch > '0' && ch < ' ' ) d = ch - '0';
++				d = ch - '0';
++				if( d > 9 ) d -= 7;
++				if( d > -1 && d < 16 ) {
++					v = ( 16 * v ) + d;
++					gotch = TRUE;
++				}
++			}
++		}
++		if( gotch ) {
++			// Replace = with char and move down in buffer
++			*ptr = v;
++			src = ptr + 3;
++			dest = ptr + 1;
++			while( *src ) {
++				*dest++ = *src++;
++			}
++			*dest = '\0';
++		}
++		ptr++;
++	}
++}
++
++/*
++* Read file into cache.
++* Note that one VCard can have multiple E-Mail addresses (MAIL tags);
++* these are broken out into separate address items. An address item
++* is generated for the person identified by FN tag and each EMAIL tag.
++* If a sub-type is included in the EMAIL entry, this will be used as
++* the Remarks member. Also note that it is possible for one VCard
++* entry to have multiple FN tags; this might not make sense. However,
++* it will generate duplicate address entries for each person listed.
++*/
++void vcard_read_cache( VCardFile *cardFile ) {
++	gchar *tagtemp = NULL, *tagname = NULL, *tagvalue = NULL, *tagtype = NULL, *tagrest = NULL;
++	GSList *listName = NULL, *listAddress = NULL, *listRemarks = NULL, *listID = NULL;
++	GSList *listQP = NULL;
++
++	for( ;; ) {
++		gchar *line =  vcard_get_line( cardFile );
++		if( line == NULL ) break;
++
++		// fprintf( stdout, "%s\n", line );
++
++		/* Parse line */
++		tagtemp = vcard_get_tagname( line, VCARD_SEP_TAG );
++		if( tagtemp ) {
++			// fprintf( stdout, "\ttemp:  %s\n", tagtemp );
++			tagvalue = vcard_get_tagvalue( line, VCARD_SEP_TAG );
++			tagname = vcard_get_tagname( tagtemp, VCARD_SEP_TYPE );
++			tagtype = vcard_get_tagvalue( tagtemp, VCARD_SEP_TYPE );
++			if( tagname == NULL ) {
++				tagname = tagtemp;
++				tagtemp = NULL;
++			}
++
++			// fprintf( stdout, "\tname:  %s\n", tagname );
++			// fprintf( stdout, "\ttype:  %s\n", tagtype );
++			// fprintf( stdout, "\tvalue: %s\n", tagvalue );
++
++			if( tagvalue ) {
++				if( g_strcasecmp( tagtype, VCARD_TYPE_QP ) == 0 ) {
++					// Quoted-Printable: could span multiple lines
++					tagvalue = vcard_read_qp( cardFile, tagvalue );
++					vcard_unescape_qp( tagvalue );
++					// fprintf( stdout, "QUOTED-PRINTABLE !!! final\n>%s<\n", tagvalue );
++				}
++
++				if( g_strcasecmp( tagname, VCARD_TAG_START ) == 0 &&  g_strcasecmp( tagvalue, VCARD_NAME ) == 0 ) {
++					// fprintf( stdout, "start card\n" );
++					vcard_free_lists( listName, listAddress, listRemarks, listID );
++					listName = listAddress = listRemarks = listID = NULL;
++				}
++				if( g_strcasecmp( tagname, VCARD_TAG_FULLNAME ) == 0 ) {
++					// fprintf( stdout, "- full name: %s\n", tagvalue );
++					listName = g_slist_append( listName, g_strdup( tagvalue ) );
++				}
++				if( g_strcasecmp( tagname, VCARD_TAG_EMAIL ) == 0 ) {
++					// fprintf( stdout, "- address: %s\n", tagvalue );
++					listAddress = g_slist_append( listAddress, g_strdup( tagvalue ) );
++					listRemarks = g_slist_append( listRemarks, g_strdup( tagtype ) );
++				}
++				if( g_strcasecmp( tagname, VCARD_TAG_UID ) == 0 ) {
++					// fprintf( stdout, "- id: %s\n", tagvalue );
++					listID = g_slist_append( listID, g_strdup( tagvalue ) );
++				}
++				if( g_strcasecmp( tagname, VCARD_TAG_END ) == 0 && g_strcasecmp( tagvalue, VCARD_NAME ) == 0 ) {
++					// VCard is complete
++					// fprintf( stdout, "end card\n--\n" );
++					// vcard_dump_lists( listName, listAddress, listRemarks, listID, stdout );
++					vcard_build_items( cardFile, listName, listAddress, listRemarks, listID );
++					vcard_free_lists( listName, listAddress, listRemarks, listID );
++					listName = listAddress = listRemarks = listID = NULL;
++				}
++				g_free( tagvalue );
++			}
++			g_free( tagname );
++			g_free( tagtype );
++		}
++	}
++
++	// Free lists
++	vcard_free_lists( listName, listAddress, listRemarks, listID );
++	listName = listAddress = listRemarks = listID = NULL;
++}
++
++// ============================================================================================
++/*
++* Read file into list. Main entry point
++* Return: TRUE if file read successfully.
++*/
++// ============================================================================================
++gint vcard_read_file( VCardFile *cardFile ) {
++	gint retVal = MGU_SUCCESS;
++	g_return_if_fail( cardFile != NULL );
++	if( mgu_check_file( cardFile->addressCache, cardFile->path ) ) {
++		mgu_clear_cache( cardFile->addressCache );
++		retVal = vcard_open_file( cardFile );
++		if( retVal == MGU_SUCCESS ) {
++			// Read data into the list
++			vcard_read_cache( cardFile );
++			vcard_close_file( cardFile );
++
++			// Mark cache
++			mgu_mark_cache( cardFile->addressCache, cardFile->path );
++			cardFile->addressCache->modified = FALSE;
++			cardFile->addressCache->dataRead = TRUE;
++		}
++	}
++	return retVal;
++}
++
++/*
++* Return link list of address items.
++* Return: TRUE if file read successfully.
++*/
++GList *vcard_get_address_list( VCardFile *cardFile ) {
++	g_return_if_fail( cardFile != NULL );
++	return cardFile->addressCache->addressList;
++}
++
++/*
++* Validate that all parameters specified.
++* Return: TRUE if data is good.
++*/
++gboolean vcard_validate( const VCardFile *cardFile ) {
++	gboolean retVal;
++	g_return_if_fail( cardFile != NULL );
++
++	retVal = TRUE;
++	if( cardFile->path ) {
++		if( strlen( cardFile->path ) < 1 ) retVal = FALSE;
++	}
++	else {
++		retVal = FALSE;
++	}
++	if( cardFile->name ) {
++		if( strlen( cardFile->name ) < 1 ) retVal = FALSE;
++	}
++	else {
++		retVal = FALSE;
++	}
++	return retVal;
++}
++
++#define WORK_BUFLEN 1024
++
++/*
++* Attempt to find a valid GnomeCard file.
++* Return: Filename, or home directory if not found. Filename should
++*	be g_free() when done.
++*/
++gchar *vcard_find_gnomecard( void ) {
++	gchar *homedir;
++	gchar buf[ WORK_BUFLEN ];
++	gchar str[ WORK_BUFLEN ];
++	gchar *fileSpec;
++	gint len, lenlbl, i;
++	FILE *fp;
++
++	homedir = g_get_home_dir();
++	if( ! homedir ) return NULL;
++
++	strcpy( str, homedir );
++	len = strlen( str );
++	if( len > 0 ) {
++		if( str[ len-1 ] != G_DIR_SEPARATOR ) {
++			str[ len ] = G_DIR_SEPARATOR;
++			str[ ++len ] = '\0';
++		}
++	}
++	strcat( str, GNOMECARD_DIR );
++	strcat( str, G_DIR_SEPARATOR_S );
++	strcat( str, GNOMECARD_FILE );
++
++	fileSpec = NULL;
++	if( ( fp = fopen( str, "r" ) ) != NULL ) {
++		// Read configuration file
++		lenlbl = strlen( GNOMECARD_SECTION );
++		while( fgets( buf, sizeof( buf ), fp ) != NULL ) {
++			if( 0 == g_strncasecmp( buf, GNOMECARD_SECTION, lenlbl ) ) {
++				break;
++			}
++		}
++
++		while( fgets( buf, sizeof( buf ), fp ) != NULL ) {
++			g_strchomp( buf );
++			if( buf[0] == '[' ) break;
++			for( i = 0; i < lenlbl; i++ ) {
++				if( buf[i] == '=' ) {
++					if( 0 == g_strncasecmp( buf, GNOMECARD_PARAM, i ) ) {
++						fileSpec = g_strdup( buf + i + 1 );
++						g_strstrip( fileSpec );
++					}
++				}
++			}
++		}
++		fclose( fp );
++	}
++
++	if( fileSpec == NULL ) {
++		// Use the home directory
++		str[ len ] = '\0';
++		fileSpec = g_strdup( str );
++	}
++
++	return fileSpec;
++}
++
++/*
++* Attempt to read file, testing for valid VCard format.
++* Return: TRUE if file appears to be valid format.
++*/
++gint vcard_test_read_file( const gchar *fileSpec ) {
++	gboolean haveStart;
++	gchar *tagtemp = NULL, *tagname = NULL, *tagvalue = NULL, *tagtype = NULL, *tagrest = NULL, *line;
++	VCardFile *cardFile;
++	gint retVal, lines;
++
++	if( ! fileSpec ) return MGU_NO_FILE;
++
++	retVal = MGU_SUCCESS;
++	cardFile = vcard_create_path( fileSpec );
++	retVal = vcard_open_file( cardFile );
++	if( retVal == MGU_SUCCESS ) {
++		retVal = MGU_BAD_FORMAT;
++		haveStart = FALSE;
++		lines = VCARD_TEST_LINES;
++		while( lines > 0 ) {
++			lines--;
++			if( ( line =  vcard_get_line( cardFile ) ) == NULL ) break;
++
++			/* Parse line */
++			tagtemp = vcard_get_tagname( line, VCARD_SEP_TAG );
++			if( tagtemp ) {
++				tagvalue = vcard_get_tagvalue( line, VCARD_SEP_TAG );
++				tagname = vcard_get_tagname( tagtemp, VCARD_SEP_TYPE );
++				tagtype = vcard_get_tagvalue( tagtemp, VCARD_SEP_TYPE );
++				if( tagname == NULL ) {
++					tagname = tagtemp;
++					tagtemp = NULL;
++				}
++
++				if( tagvalue ) {
++					if( g_strcasecmp( tagtype, VCARD_TYPE_QP ) == 0 ) {
++						// Quoted-Printable: could span multiple lines
++						tagvalue = vcard_read_qp( cardFile, tagvalue );
++						vcard_unescape_qp( tagvalue );
++					}
++
++					if( g_strcasecmp( tagname, VCARD_TAG_START ) == 0 &&  g_strcasecmp( tagvalue, VCARD_NAME ) == 0 ) {
++						haveStart = TRUE;
++					}
++					if( g_strcasecmp( tagname, VCARD_TAG_END ) == 0 && g_strcasecmp( tagvalue, VCARD_NAME ) == 0 ) {
++						// VCard is complete
++						if( haveStart ) retVal = MGU_SUCCESS;
++					}
++					g_free( tagvalue );
++				}
++				g_free( tagname );
++				g_free( tagtype );
++			}
++		}
++		vcard_close_file( cardFile );
++	}
++	vcard_free( cardFile );
++	cardFile = NULL;
++	return retVal;
++}
++
++/*
++* End of Source.
++*/
+diff -Naur ./src/vcard.h ../sylpheed-0.4.66adr/src/vcard.h
+--- ./src/vcard.h	Wed Dec 31 17:00:00 1969
++++ ../sylpheed-0.4.66adr/src/vcard.h	Wed May  9 15:24:17 2001
+@@ -0,0 +1,91 @@
++/*
++ * Sylpheed -- a GTK+ based, lightweight, and fast e-mail client
++ * Copyright (C) 2001 Match Grun
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++/*
++ * Definitions necessary to access VCard files. VCard files are used
++ * by GnomeCard for addressbook, and Netscape for sending business
++ * card information. Refer to RFC2426 for more information.
++ */
++
++#ifndef __VCARD_H__
++#define __VCARD_H__
++
++#include <time.h>
++#include <stdio.h>
++#include <glib.h>
++
++#include "mgutils.h"
++
++#define VCARDBUFSIZE       1024
++
++#define	VCARD_TAG_START    "begin"
++#define	VCARD_TAG_END      "end"
++#define	VCARD_NAME         "vcard"
++
++#define	VCARD_TAG_FULLNAME "fn"
++#define VCARD_TAG_NAME     "n"
++#define	VCARD_TAG_EMAIL    "email"
++#define VCARD_TAG_UID      "uid"
++
++#define VCARD_TYPE_QP      "quoted-printable"
++
++#define	VCARD_SEP_TAG	':'
++#define	VCARD_SEP_TYPE	';'
++
++/*
++// Typical VCard entry:
++//
++// BEGIN:VCARD
++// FN:Axle Rose
++// N:Rose;Axle;D;Ms;Jnr
++// REV:2001-04-22T03:52:05
++// ADR;HOME:;;777 Lexington Avenue;Denver;CO;80299;USA
++// ADR;POSTAL:P O Box 777;;;Denver;CO;80298;Usa
++// TEL;HOME:303-555-1234
++// EMAIL;AOL:axlerose@aol.com
++// EMAIL;INTERNET:axlerose@netscape.net
++// TITLE:Janitor
++// ORG:The Company
++// URL:http://www.axlerose.com
++// END:VCARD
++*/
++
++// VCard object
++typedef struct _VCardFile VCardFile;
++struct _VCardFile {
++	gchar        *name;
++	FILE         *file;
++	gchar        *path;
++	AddressCache *addressCache;
++	gchar        buffer[ VCARDBUFSIZE ];
++	gchar        *bufptr;
++};
++
++/* Function prototypes */
++VCardFile *vcard_create();
++VCardFile *vcard_create_path( const gchar *path );
++void vcard_force_refresh( VCardFile *cardFile );
++void vcard_free( VCardFile *cardFile );
++gboolean vcard_read_file( VCardFile *cardFile );
++GList *vcard_get_address_list( VCardFile *cardFile );
++gboolean vcard_validate( const VCardFile *cardFile );
++gchar *vcard_find_gnomecard( void );
++gint vcard_test_read_file( const gchar *fileSpec );
++
++#endif /* __VCARD_H__ */
