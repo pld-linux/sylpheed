@@ -49,7 +49,7 @@ address book
 Szybki klient poczty o mo¿liwo¶ciach takich jak: o przyjazny,
 intuicyjny interfejs u¿ytkownika o zintegrowany klient USENET o
 mo¿liwo¶æ pracy wy³±cznie przy u¿yciu klawiatury o klawiszologia typu
-Mew/Wanderlust o obs³uga wieloczê¶ciowych MIME o obs³uga nieskoñczonej
+Mew/Wanderlust o obs³uga wieloczê¶ciowych MIME o obs³uga dowolnej
 ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 
 %prep
