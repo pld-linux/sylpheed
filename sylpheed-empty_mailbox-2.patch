@@ -1,0 +1,125 @@
+diff -Naur sylpheed/src/folderview.c sylpheed-test-patch/src/folderview.c
+--- sylpheed/src/folderview.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/folderview.c	Wed Apr 11 00:09:33 2001
+@@ -149,6 +149,9 @@
+ static void folderview_delete_folder_cb	(FolderView	*folderview,
+ 					 guint		 action,
+ 					 GtkWidget	*widget);
++static void folderview_empty_mailbox_cb(FolderView	*folderview,
++					 guint		 action,
++					 GtkWidget	*widget);
+ static void folderview_remove_mailbox_cb(FolderView	*folderview,
+ 					 guint		 action,
+ 					 GtkWidget	*widget);
+@@ -199,6 +202,7 @@
+ 	{N_("/_Delete folder"),		NULL, folderview_delete_folder_cb, 0, NULL},
+ 	{N_("/---"),			NULL, NULL, 0, "<Separator>"},
+ 	{N_("/Remove _mailbox"),	NULL, folderview_remove_mailbox_cb, 0, NULL},
++	{N_("/_Empty mailbox"),		NULL, folderview_empty_mailbox_cb, 0, NULL},
+ 	{N_("/---"),			NULL, NULL, 0, "<Separator>"},
+ 	{N_("/_Property..."),		NULL, NULL, 0, NULL}
+ };
+@@ -940,9 +944,13 @@
+ 				   "/Create new folder...", TRUE);
+ 		menu_set_sensitive(folderview->mail_factory,
+ 				   "/Remove mailbox", TRUE);
++ 		menu_set_sensitive(folderview->mail_factory,
++ 				   "/Empty mailbox", TRUE);
+ 	} else if (folder->type == F_MH && item->stype != F_NORMAL) {
+ 		menu_set_sensitive(folderview->mail_factory,
+ 				   "/Create new folder...", TRUE);
++ 		menu_set_sensitive(folderview->mail_factory,
++ 				   "/Empty mailbox", TRUE);
+ 	} else if (folder->type == F_MH) {
+ 		menu_set_sensitive(folderview->mail_factory,
+ 				   "/Create new folder...", TRUE);
+@@ -950,6 +958,8 @@
+ 				   "/Rename folder...", TRUE);
+ 		menu_set_sensitive(folderview->mail_factory,
+ 				   "/Delete folder", TRUE);
++		menu_set_sensitive(folderview->mail_factory,
++				   "/Empty mailbox", TRUE);
+ 	} else if (folder->type == F_IMAP && item->parent == NULL) {
+ 		menu_set_sensitive(folderview->imap_factory,
+ 				   "/Create new folder...", TRUE);
+@@ -1311,6 +1321,47 @@
+ 	folderview_unselect(folderview);
+ 	gtk_ctree_remove_node(ctree, node);
+ 	folder_write_list();
++}
++
++static void folderview_empty_mailbox_cb(FolderView *folderview, guint action,
++					 GtkWidget *widget)
++{
++	SummaryView *summaryview = folderview->summaryview;
++	GtkCTree *ctree = GTK_CTREE(summaryview->ctree);
++	GList *cur;
++	gchar *message;
++	AlertValue avalue;
++	FolderItem *item;
++
++	item = gtk_ctree_node_get_row_data(ctree, folderview->selected);
++
++	g_return_if_fail(item != NULL);
++
++	if (!item ||
++	    item->folder->type == F_NEWS) return;
++
++	/* if current folder is trash, call clean trash */
++	if (item->stype == F_TRASH) {
++		main_window_empty_trash(folderview->mainwin,TRUE);
++		return;
++	}
++	
++	message = g_strdup_printf(_("Delete all messages in mailbox `%s'?"),
++				  g_basename(item->path));
++	avalue = alertpanel(_("Empty mailbox"), message,
++			    _("Yes"), _("+No"), NULL);
++	g_free(message);
++
++	if (avalue != G_ALERTDEFAULT)
++		return;
++		
++	gtk_clist_select_all(GTK_CLIST(summaryview->ctree));
++	for (cur = GTK_CLIST(ctree)->selection; cur != NULL; cur = cur->next)
++		summary_delete_row(summaryview, GTK_CTREE_NODE(cur->data));
++
++	summary_step(summaryview, GTK_SCROLL_STEP_FORWARD);
++
++	summary_execute(summaryview);
+ }
+ 
+ static void folderview_new_imap_folder_cb(FolderView *folderview, guint action,
+diff -Naur sylpheed/src/summaryview.c sylpheed-test-patch/src/summaryview.c
+--- sylpheed/src/summaryview.c	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/summaryview.c	Wed Apr 11 00:08:41 2001
+@@ -163,8 +163,6 @@
+ 					 GtkCTreeNode		*row);
+ static void summary_mark_row_as_unread	(SummaryView		*summaryview,
+ 					 GtkCTreeNode		*row);
+-static void summary_delete_row		(SummaryView		*summaryview,
+-					 GtkCTreeNode		*row);
+ static void summary_unmark_row		(SummaryView		*summaryview,
+ 					 GtkCTreeNode		*row);
+ static void summary_move_row_to		(SummaryView		*summaryview,
+@@ -1710,7 +1708,7 @@
+ 	summary_status_show(summaryview);
+ }
+ 
+-static void summary_delete_row(SummaryView *summaryview, GtkCTreeNode *row)
++void summary_delete_row(SummaryView *summaryview, GtkCTreeNode *row)
+ {
+ 	GtkCTree *ctree = GTK_CTREE(summaryview->ctree);
+ 	MsgInfo *msginfo;
+diff -Naur sylpheed/src/summaryview.h sylpheed-test-patch/src/summaryview.h
+--- sylpheed/src/summaryview.h	Tue Apr 10 13:03:24 2001
++++ sylpheed-test-patch/src/summaryview.h	Wed Apr 11 00:08:41 2001
+@@ -158,6 +158,8 @@
+ 
+ void summary_delete		  (SummaryView		*summaryview);
+ void summary_delete_duplicated	  (SummaryView		*summaryview);
++void summary_delete_row		  (SummaryView		*summaryview,
++				   GtkCTreeNode		*row);
+ void summary_execute		  (SummaryView		*summaryview);
+ void summary_attract_by_subject	  (SummaryView		*summaryview);
+ gint summary_write_cache	  (SummaryView		*summaryview);
