@@ -34,7 +34,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 %{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
-%{!?_without_ldap:BuildRequires:        openldap-devel}
+%{!?_without_ldap:BuildRequires:	openldap-devel}
 %{!?_without_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
@@ -100,11 +100,11 @@ rm -f missing
 	--%{!?_without_jconv:en}%{?_without_jconv:dis}able-jconv \
 	--enable-gdk-pixbuf \
 	--enable-threads \
-	%{!?_without_ssl: --enable-ssl} \
-	%{!?_without_ldap: --enable-ldap} \
-	%{!?_without_ipv6: --enable-ipv6} \
-	%{!?_without_gpg: --enable-gpgme} \
-	%{?_without_faces: --disable-compfaces}
+	%{!?_without_ssl:--enable-ssl} \
+	%{!?_without_ldap:--enable-ldap} \
+	%{!?_without_ipv6:--enable-ipv6} \
+	%{!?_without_gpg:--enable-gpgme} \
+	%{?_without_faces:--disable-compfaces}
 
 %{__make}
 
