@@ -35,7 +35,7 @@ BuildRequires:	libtool
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
-Conflicts:	gpgme-devel >= 4.0
+%{?with_gpg:Conflicts:	gpgme-devel >= 4.0}
 Obsoletes:	sylpheed-claws
 
 %description
