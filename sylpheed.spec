@@ -2,13 +2,16 @@
 # Conditional build:
 # _without_jconv	- without jconv support
 # _without_gpg		- without gpg support
+# _without_ssl		- without ssl support
+# _without_ipv6		- without ipv6 support
+# _without_ldap		- without ldap support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.8.11
-Release:	3
+Release:	4
 License:	GPL
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
@@ -23,7 +26,8 @@ BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_gpg:BuildRequires:	gpgme-devel}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-BuildRequires:	openssl-devel >= 0.9.7
+%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
+%{?!_without_ldap:BuildRequires:        openldap-devel}
 Requires:	faces
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
@@ -83,9 +87,10 @@ rm -f missing
 	--%{!?_without_jconv:en}%{?_without_jconv:dis}able-jconv \
 	--enable-gdk-pixbuf \
 	--enable-threads \
-	--enable-ssl \
-	--enable-ipv6 \
-	%{!?_without_gpg:--enable-gpgme}
+	%{!?_without_ssl; --enable-ssl} \
+	%{!?_without_ldap: --enable-ldap} \
+	%{!?_without_ipv6: --enable-ipv6} \
+	%{!?_without_gpg: --enable-gpgme}
 
 %{__make}
 
