@@ -5,34 +5,46 @@
 # _without_ssl		- without ssl support
 # _without_ipv6		- without ipv6 support
 # _without_ldap		- without ldap support
-#
+# _without_faces	- without compfaces support
+# _with_gtk2		- with gtk+2 gui
+%define		gtk2_snap	20030906
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	0.8.11
-Release:	4
-License:	GPL
+Version:	0.9.5
+Release:	1
+License:	GPL v2
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
+# Source0-md5:	2e217d01a941e6006ffe4bf86df380d4
 Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
+Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
+# Patch3 comes from http://sourceforge.net/projects/sylpheed-gtk2/
+Patch3:		http://dl.sourceforge.net/sourceforge/sylpheed-gtk2/%{name}-%{version}-gtk2-%{gtk2_snap}.diff.gz
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	faces-devel
+%{!?_without_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
+%{!?_without_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
 BuildRequires:	gtk+-devel >= 1.2.6
-%{!?_without_gpg:BuildRequires:	gpgme-devel}
+%{?_with_gtk2:BuildRequires:	gtk+2-devel}
+%{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
-%{?!_without_ldap:BuildRequires:        openldap-devel}
-Requires:	faces
+%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.6j}
+%{!?_without_ldap:BuildRequires:	openldap-devel}
+%{!?_without_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Conflicts:	gpgme-devel >= 4.0
 Obsoletes:	sylpheed-claws
+
+%define		_prefix		/usr/X11R6
+%define		_desktopdir	%{_applnkdir}/Network/Mail
 
 %description
 This program is an X based fast e-mail client which has features (or
@@ -73,33 +85,41 @@ recursos como:
 
 %prep
 %setup -q
-%patch0 -p1
+%{!?_with_gtk2:%patch0 -p1}
 %patch1 -p1
+%patch2 -p0
+%{?_with_gtk2:%patch3 -p1}
 
 %build
 rm -f missing
+%{?_with_gtk2:glib-gettextize --copy --force}
 %{__libtoolize}
-%{__gettextize}
-%{__aclocal}
+%{?_with_gtk2:intltoolize --copy --force}
+%{!?_with_gtk2:%{__gettextize}}
+%{__aclocal} %{?_with_gtk2:-I ac}
+%{?_with_gtk2:%{__autoheader}}
 %{__autoconf}
 %{__automake}
 %configure \
 	--%{!?_without_jconv:en}%{?_without_jconv:dis}able-jconv \
 	--enable-gdk-pixbuf \
 	--enable-threads \
-	%{!?_without_ssl; --enable-ssl} \
-	%{!?_without_ldap: --enable-ldap} \
-	%{!?_without_ipv6: --enable-ipv6} \
-	%{!?_without_gpg: --enable-gpgme}
+	%{!?_without_ssl:--enable-ssl} \
+	%{!?_without_ldap:--enable-ldap} \
+	%{!?_without_ipv6:--enable-ipv6} \
+	%{!?_without_gpg:--enable-gpgme} \
+	%{?_without_faces:--disable-compfaces}
 
 %{__make}
 
+%{?_with_gtk2:cd po; /bin/sh poconv.sh}
+
 %install
 rm -rf $RPM_BUILD_ROOT
-
-%{__make} install DESTDIR=$RPM_BUILD_ROOT
-
 install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
+
+%{__make} install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 install %{name}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 install %{name}.png $RPM_BUILD_ROOT%{_pixmapsdir}
