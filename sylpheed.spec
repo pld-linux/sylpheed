@@ -4,16 +4,19 @@ Name:		sylpheed
 Version:	0.4.64
 Release:	1
 License:	GPL
-Group:          X11/Applications
-Group(de):      X11/Applikationen
-Group(pl):      X11/Aplikacje
-Source:		http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
-Patch:		%{name}-DESTDIR.patch
+Group:		X11/Applications
+Group(de):	X11/Applikationen
+Group(pl):	X11/Aplikacje
+Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
+Patch0:		%{name}-DESTDIR.patch
 BuildRequires:	glib-devel >= 1.2.6
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gdk-pixbuf-devel >= 0.8.0
 URL:		http://sylpheed.good-day.net/
 Buildroot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		_prefix		/usr/X11R6
+%define		_mandir		%{_prefix}/man
 
 %description
 Sylpheed is an e-mail client (and news reader) based on GTK+, running
@@ -32,16 +35,15 @@ also utilize fetchmail or/and procmail, and external programs on
 receiving (like inc or imget).
 
 %description -l pl
-Sylpheed to klient poczty oraz czytnik news pracuj±cy pod X Window. Posiada
-wygodny interfejs, ma spore mo¿liwo¶ci i jest ³atwy w konfiguracji.
-Obs³uguje POP3, IMAP, filtrowanie poczty i wiele innych.
+Sylpheed to klient poczty oraz czytnik news pracuj±cy pod X Window.
+Posiada wygodny interfejs, ma spore mo¿liwo¶ci i jest ³atwy w
+konfiguracji. Obs³uguje POP3, IMAP, filtrowanie poczty i wiele innych.
 
 %prep
 %setup -q
 %patch -p1
 
 %build
-CFLAGS="%{rpmcflags}"
 %configure \
 	--enable-ipv6
 
@@ -49,16 +51,18 @@ CFLAGS="%{rpmcflags}"
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
 %{__make} DESTDIR=$RPM_BUILD_ROOT%{_prefix} install
 
 gzip -9nf ChangeLog* README* TODO*
 
+%find_lang %{name}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files
+%files -f %{name}.lang
 %defattr(644,root,root,755)
-%doc ChangeLog* README* TODO*
+%doc *.gz
 %attr(755,root,root) %{_bindir}/sylpheed
-%{_datadir}/locale/*/LC_MESSAGES/sylpheed.mo
-%{_datadir}/sylpheed/manual/*/*
+%{_datadir}/sylpheed
