@@ -5,7 +5,7 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
 Version:	0.6.5
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Applications/Networking
 Group(de):	X11/Applikationen/Netzwerkwesen
@@ -39,8 +39,8 @@ This program is an X based fast e-mail client which has features (or
 go for it :-)) like:
 - user-friendly and intuitive interface
 - integrated NetNews client (partially implemented)
-- ability of keyboard-only operation 
-- Mew/Wanderlust-like key bind 
+- ability of keyboard-only operation
+- Mew/Wanderlust-like key bind
 - multipart MIME
 - unlimited multiple account handling
 - assortment function
@@ -49,11 +49,11 @@ go for it :-)) like:
 
 %description -l pl
 Szybki klient poczty o mo¿liwo¶ciach takich jak
-- o przyjazny, intuicyjny interfejs u¿ytkownika 
+- o przyjazny, intuicyjny interfejs u¿ytkownika
 - zintegrowany klient USENET
 - mo¿liwo¶æ pracy wy³±cznie przy u¿yciu klawiatury
 - klawiszologia typu Mew/Wanderlust
-- obs³uga wieloczê¶ciowych MIME 
+- obs³uga wieloczê¶ciowych MIME
 - obs³uga dowolnej ilo¶ci kont pocztowych
 - funkcje sortowania o ksi±¿ka adresowa
 - wsparcie szyfrowania SSL
