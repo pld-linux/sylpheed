@@ -1,10 +1,10 @@
 [Desktop Entry]
 Name=Sylpheed
 Comment=GTK+ based e-mail client
+Comment[ja]=軽量な E-メールクライアント
 Comment[pl]=Oparty na GTK+ program pocztowy
-Exec=/usr/X11R6/bin/sylpheed
+Exec=sylpheed
 Icon=sylpheed.png
 Terminal=0
 Type=Application
-
 # vi: encoding=utf-8
