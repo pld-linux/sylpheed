@@ -1,13 +1,18 @@
---- sylpheed-0.8.11/sylpheed.desktop~	Fri Aug 30 04:46:13 2002
-+++ sylpheed-0.8.11/sylpheed.desktop	Fri Mar 28 09:27:35 2003
-@@ -3,8 +3,9 @@
+--- sylpheed-0.9.6/sylpheed.desktop~	Fri Dec 26 13:53:57 2003
++++ sylpheed-0.9.6/sylpheed.desktop	Fri Dec 26 13:53:57 2003
+@@ -2,9 +2,12 @@
+ Name=Sylpheed
  Name[ja]=Sylpheed
  Comment=E-Mail client
- Comment[ja]=≈≈ª“•·°º•Î•Ø•È•§•¢•Û•»
+-Comment[ja]=≈≈ª“•·°º•Î•Ø•È•§•¢•Û•»
++Comment[ja]=ÈõªÂ≠ê„É°„Éº„É´„ÇØ„É©„Ç§„Ç¢„É≥„Éà
 +Comment[pl]=Klient poczty elektronicznej
  Exec=sylpheed
  Icon=sylpheed.png
- Terminal=0
+-Terminal=0
++Terminal=false
  Type=Application
 -Categories=Application;Network;
-+Categories=Application;Network;Email
++Categories=Application;Network;Email;
++Encoding=UTF-8
++# vi: encoding=utf-8
