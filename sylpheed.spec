@@ -36,7 +36,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 %{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.6k}
+%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.6m}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 %{!?_without_faces:Requires:	faces}
 Requires:	mailcap
