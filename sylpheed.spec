@@ -77,7 +77,7 @@ recursos como:
 %build
 rm -f missing
 %{__libtoolize}
-#%{__gettextize}
+%{__gettextize}
 %{__aclocal}
 %{__autoconf}
 %{__autoheader}
