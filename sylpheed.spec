@@ -22,7 +22,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gpgme-devel
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-BuildRequires:	openssl-devel
+BuildRequires:	openssl-devel >= 0.9.7
 Requires:	faces
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
