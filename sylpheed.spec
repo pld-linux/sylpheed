@@ -22,6 +22,7 @@ Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
 Patch3:		%{name}-nolibs.patch
+Patch4:		http://www.thewildbeast.co.uk/sylpheed/0.9.12/common-smtp-server.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
@@ -85,6 +86,7 @@ recursos como:
 %patch1 -p1
 %patch2 -p0
 %patch3 -p1
+%patch4 -p0
 
 mv -f po/{sr,sr@Latn}.po
 mv -f po/{zh_TW.Big5,zh_TW}.po
