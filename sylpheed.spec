@@ -1,13 +1,14 @@
 #
 # Conditional build:
 # _without_jconv	- without jconv support
+# _without_gpg		- without gpg support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.8.11
-Release:	2
+Release:	3
 License:	GPL
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
@@ -19,7 +20,7 @@ BuildRequires:	faces-devel
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
-BuildRequires:	gpgme-devel
+%{!?_without_gpg:BuildRequires:	gpgme-devel}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 BuildRequires:	openssl-devel >= 0.9.7
@@ -84,7 +85,7 @@ rm -f missing
 	--enable-threads \
 	--enable-ssl \
 	--enable-ipv6 \
-	--enable-gpgme
+	%{!?_without_gpg:--enable-gpgme}
 
 %{__make}
 
