@@ -18,8 +18,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	glib-devel
 BuildRequires:	gettext-devel
 BuildRequires:	imlib-devel
-Requires: gtkhtml
-BuildRequires: gtkhtml-devel
+BuildRequires:	gtkhtml-devel >= 0.9.2
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -48,15 +47,6 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %patch1 -p1
 
 %build
-CPPFLAGS="-I/usr/X11R6/include -I/usr/X11R6/include/gtk-1.2 -I/usr/include/glib-1.2 -I/usr/lib/glib/include/"
-LDFLAGS="-L/usr/X11R6/lib/"
-export CPPFLAGS LDFLAGS
-aclocal -I ac \
-  && autoconf \
-	  && autoheader \
-		  && automake --add-missing --foreign --copy \
-			  && ./configure $@
-				
 libtoolize --copy --force
 gettextize --copy --force 
 aclocal -I ac
