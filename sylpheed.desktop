@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Sylpheed
+Comment=GTK+ based e-mail client
+Exec=/usr/X11R6/bin/sylpheed
+Icon=sylpheed.xpm
+Terminal=0
+Type=Application
+
