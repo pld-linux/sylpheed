@@ -20,6 +20,7 @@ Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
+# Patch3 comes from http://www.homa.ne.jp/~ashie/linux/sylpheed-gtk2.html
 Patch3:		%{name}-gtk2.patch.bz2
 BuildRequires:	autoconf
 BuildRequires:	automake
