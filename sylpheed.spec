@@ -4,7 +4,7 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
 Version:	0.6.2
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Applications/Networking
 Group(de):	X11/Applikationen/Netzwerkwesen
@@ -13,6 +13,7 @@ Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
 Patch0:		%{name}-open-url.patch
 Patch1:		%{name}-fix-compose-cmdline.patch
+Patch2:		%{name}-polish-po.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	faces-devel
@@ -48,6 +49,7 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %setup -q
 %patch0 -p1
 %patch1 -p0
+%patch2 -p1
 
 %build
 rm -f missing
