@@ -25,8 +25,7 @@ BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
-%{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.3.10}
-%{?with_gpg:BuildRequires:	gpgme-devel < 1:0.4}
+%{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	imlib-devel
 BuildRequires:	libtool
