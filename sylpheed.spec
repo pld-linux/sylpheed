@@ -5,9 +5,6 @@
 # _without_ssl		- without ssl support
 # _without_ipv6		- without ipv6 support
 # _without_ldap		- without ldap support
-
-%define		pre	pre1
-
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
