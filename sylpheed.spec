@@ -28,8 +28,8 @@ BuildRequires:	automake
 %{!?_without_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
-BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
+BuildRequires:	gtk+-devel >= 1.2.6
 %{?_with_gtk2:BuildRequires:	gtk+2-devel}
 %{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
@@ -113,10 +113,10 @@ rm -f missing
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
-%{__make} install DESTDIR=$RPM_BUILD_ROOT
-
 install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
+
+%{__make} install \
+	DESTDIR=$RPM_BUILD_ROOT
 
 install %{name}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 install %{name}.png $RPM_BUILD_ROOT%{_pixmapsdir}
