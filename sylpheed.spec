@@ -1,12 +1,11 @@
 #
-# maybe TODO: jpilot (libpisock)
-#
 # Conditional build:
-%bcond_without	gpg		# without gpg support
-%bcond_without	ssl		# without ssl support
-%bcond_without	ipv6		# without ipv6 support
-%bcond_without	ldap		# without ldap support
+%bcond_without	gpg		# without GnuPG support
+%bcond_without	ssl		# without SSL support
+%bcond_without	ipv6		# without IPv6 support
+%bcond_without	ldap		# without LDAP support
 %bcond_without	faces		# without compfaces support
+%bcond_without	jpilot		# without jpilot support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
@@ -33,7 +32,9 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	libtool
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_ldap:BuildRequires:	openldap-devel}
+%{?with_jpilot:BuildRequires:	pilot-link-devel}
 %{?with_faces:Requires:	faces}
+%{?with_jpilot:Requires:	pilot-link}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 Obsoletes:	sylpheed-claws
@@ -100,9 +101,10 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 %configure \
 	--enable-gdk-pixbuf \
 	--enable-threads \
-	%{?with_faces:--disable-compfaces} \
+	%{!?with_faces:--disable-compface} \
 	%{?with_gpg:--enable-gpgme} \
 	%{!?with_ipv6:--disable-ipv6} \
+	%{?with_jpilot:--enable-jpilot} \
 	%{?with_ldap:--enable-ldap} \
 	%{?with_ssl:--enable-ssl}
 
