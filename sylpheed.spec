@@ -11,11 +11,12 @@ Group(de):	X11/Applikationen/Netzwerkwesen
 Group(pl):	X11/Aplikacje/Sieciowe
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
-Patch0:		%{name}-open-url.patch
-Patch1:		%{name}-fix-compose-cmdline.patch
-Patch2:		%{name}-polish-po.patch
+#Patch0:		%{name}-open-url.patch
+#Patch1:		%{name}-fix-compose-cmdline.patch
+#Patch2:		%{name}-polish-po.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
+BuildRequires:	imlib-devel
 BuildRequires:	faces-devel
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
@@ -47,9 +48,9 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p0
-%patch2 -p1
+#%patch0 -p1
+#%patch1 -p0
+#%patch2 -p1
 
 %build
 rm -f missing
@@ -61,6 +62,8 @@ autoheader
 automake --add-missing --foreign --copy
 %configure \
 	%{!?_with_jconv:--disable-jconv} \
+	--enable-impib \
+	--enable-gdk-pixbuf \
 	--enable-threads \
 	--enable-ipv6
 
