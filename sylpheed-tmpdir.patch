@@ -1,30 +1,27 @@
-diff -Nur sylpheed-0.6.6/src/compose.c sylpheed-0.6.6-new/src/compose.c
---- sylpheed-0.6.6/src/compose.c	Sat Dec 15 12:38:09 2001
-+++ sylpheed-0.6.6-new/src/compose.c	Mon Dec 17 14:12:06 2001
-@@ -4058,7 +4058,7 @@
+--- sylpheed-0.7.4/src/compose.c~	Mon Mar 11 23:43:49 2002
++++ sylpheed-0.7.4/src/compose.c	Mon Mar 11 23:43:49 2002
+@@ -4351,7 +4351,7 @@
  				  GtkWidget *widget)
  {
  	Compose *compose = (Compose *)data;
--	gchar tmp[22];
+-	gchar tmp[MAXPATHLEN + 1];
 +	gchar *tmp;
  	gchar *to, *newsgroups;
  
  	to = gtk_entry_get_text(GTK_ENTRY(compose->to_entry));
-@@ -4068,7 +4068,7 @@
+@@ -4361,7 +4361,7 @@
  		return;
  	}
  
--	g_snprintf(tmp, 22, "%s%ctmpmsg%d",
+-	g_snprintf(tmp, sizeof(tmp), "%s%ctmpmsg%d",
 +	tmp = g_strdup_printf("%s%ctmpmsg%d",
- 		   g_get_tmp_dir(), G_DIR_SEPARATOR, (gint)compose);
+ 		   get_rc_dir(), G_DIR_SEPARATOR, (gint)compose);
  
  	if (prefs_common.linewrap_at_send)
-@@ -4088,7 +4088,8 @@
- 
+@@ -4382,6 +4382,7 @@
  	if (unlink(tmp) < 0)
  		FILE_OP_ERROR(tmp, "unlink");
--
-+	
+ 
 +	g_free(tmp);
  	gtk_widget_destroy(compose->window);
  }
