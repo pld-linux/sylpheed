@@ -14,7 +14,7 @@ Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
 #Patch0:		%{name}-open-url.patch
 #Patch1:		%{name}-fix-compose-cmdline.patch
-#Patch2:		%{name}-polish-po.patch
+Patch2:		%{name}-polish-po.patch
 #Patch3:		%{name}-0.6.2-forward.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -52,7 +52,7 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %setup -q
 #%patch0 -p1
 #%patch1 -p0
-#%patch2 -p1
+%patch2 -p1
 #%patch3 -p1
 
 %build
