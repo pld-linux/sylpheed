@@ -1,180 +1,302 @@
-diff -Nur sylpheed-0.6.4.orig/po/pl.po sylpheed-0.6.4/po/pl.po
---- sylpheed-0.6.4.orig/po/pl.po	Sun Oct 21 16:12:13 2001
-+++ sylpheed-0.6.4/po/pl.po	Mon Oct 22 08:11:24 2001
-@@ -255,9 +255,8 @@
- msgstr "/_Plik/Nowa _ksi±¿ka"
+diff -Nur sylpheed-0.6.5.orig/po/pl.po sylpheed-0.6.5/po/pl.po
+--- sylpheed-0.6.5.orig/po/pl.po	Wed Nov  7 09:52:09 2001
++++ sylpheed-0.6.5/po/pl.po	Thu Nov  8 08:53:21 2001
+@@ -140,6 +140,8 @@
+ "New messages will be checked in this order. Check the boxes\n"
+ "on the `G' column to enable message retrieval by `Get all'."
+ msgstr ""
++"Nowe wiadomo¶ci zostan± sprawdzone w tej kolejno¶ci. Zaznacz\n"
++"w kolumnie 'G' konta, które maj± byæ sprawdzone przez 'Odbierz wsz.'"
  
- #: src/addressbook.c:346
+ #: src/account.c:446 src/addressadd.c:185 src/addressbook.c:492
+ #: src/compose.c:2265 src/editaddress.c:194 src/editaddress.c:907
+@@ -723,7 +725,7 @@
+ 
+ #: src/compose.c:411
+ msgid "/_Message/Save to _draft folder"
+-msgstr "/_Wiadomo¶æ/Zapisz w katalogu _Szablony"
++msgstr "/_Wiadomo¶æ/Zapisz w katalogu _Draft"
+ 
+ #: src/compose.c:413 src/compose.c:418 src/compose.c:420 src/compose.c:423
+ #: src/mainwindow.c:488 src/mainwindow.c:491 src/mainwindow.c:499
+@@ -777,9 +779,8 @@
+ msgstr "/_Narzêdzia/_Ksi±¿ka adresowa"
+ 
+ #: src/compose.c:430
 -#, fuzzy
- msgid "/_File/New _vCard"
--msgstr "/_Plik/Nowy _V-Card"
-+msgstr "/_Plik/Nowy _vCard"
+ msgid "/_Tool/_Template"
+-msgstr "/_Plik/_Usuñ"
++msgstr "/_Narzêdzia/_Szablon"
  
- #: src/addressbook.c:348
- msgid "/_File/New _J-Pilot"
-@@ -317,14 +316,12 @@
- msgstr "/_Adres/_Usuñ"
+ #: src/compose.c:574
+ #, c-format
+@@ -792,11 +793,11 @@
  
- #: src/addressbook.c:366
--#, fuzzy
- msgid "/_Tools"
- msgstr "/_Narzêdzia"
- 
- #: src/addressbook.c:367
--#, fuzzy
- msgid "/_Tools/Import _LDIF file"
--msgstr "/_Plik/_Importuj plik mbox..."
-+msgstr "/_Plik/Importuj plik _LDIF"
- 
- #: src/addressbook.c:368 src/compose.c:424 src/mainwindow.c:580
- msgid "/_Help"
-@@ -561,9 +558,8 @@
- msgstr "Katalog"
- 
- #: src/addressbook.c:3134
--#, fuzzy
- msgid "vCard"
--msgstr "V-Card"
-+msgstr "vCard"
- 
- #: src/addressbook.c:3150 src/addressbook.c:3166
- msgid "J-Pilot"
-@@ -1420,9 +1416,8 @@
- msgstr "/_Od¶wie¿ drzewo katalogów"
- 
- #: src/folderview.c:217 src/folderview.c:231
--#, fuzzy
- msgid "/Re_scan folder tree"
--msgstr "/_Od¶wie¿ drzewo katalogów"
-+msgstr "/Prze_skanuj ponownie drzewo katalogów"
- 
- #: src/folderview.c:219
- msgid "/Remove _mailbox"
-@@ -1480,14 +1475,12 @@
- msgstr "Przeszukiwanie katalogu %s ..."
- 
- #: src/folderview.c:620
--#, fuzzy
- msgid "Rescanning folder tree..."
--msgstr "Od¶wie¿anie widoku katalogu..."
-+msgstr "Ponowne skanowanie drzewa katalogów..."
- 
- #: src/folderview.c:639
--#, fuzzy
- msgid "Rescanning all folder trees..."
--msgstr "Przeszukiwanie katalogu %s ..."
-+msgstr "Ponowne skanowanie wszystkich drzew katalogów ..."
- 
- #: src/folderview.c:803 src/prefs_account.c:711
- msgid "Inbox"
-@@ -1865,28 +1858,24 @@
- msgstr "Wybierz importowany plik"
- 
- #: src/importldif.c:139
--#, fuzzy
- msgid "Please select a file."
--msgstr "Wybierz klucz dla `%s'"
-+msgstr "Wybierz plik."
- 
- #: src/importldif.c:144
--#, fuzzy
- msgid "Address book name must be supplied."
--msgstr "Musi byæ podana nazwa grupy."
-+msgstr "Musi byæ podana nazwa ksi±¿ki adresowej."
- 
- #: src/importldif.c:158
--#, fuzzy
- msgid "Error importing LDIF file."
--msgstr "Wybierz importowany plik"
-+msgstr "B³±d importu pliku LDIF."
- 
- #: src/importldif.c:199
--#, fuzzy
- msgid "Select LDIF File"
--msgstr "Wybierz plik"
-+msgstr "Wybierz plik LDIF"
- 
- #: src/importldif.c:253
- msgid "Import LDIF file into Address Book"
+ #: src/compose.c:838
+ msgid "Quote mark format error."
 -msgstr ""
-+msgstr "Importuj plik LDIF do ksi±¿ki adresowej"
++msgstr "B³±d formatu znacznika cytatu."
  
- #: src/inc.c:201 src/inc.c:259 src/send.c:349
- msgid "Standby"
-@@ -2075,9 +2064,8 @@
- msgstr "/_Plik/Dod_aj skrzynkê..."
+ #: src/compose.c:849
+ msgid "Message reply/forward format error."
+-msgstr ""
++msgstr "B³±d formatu odpowiedz/przeka¿ wiadomo¶æ."
  
- #: src/mainwindow.c:366
+ #: src/compose.c:1048
+ #, c-format
+@@ -960,7 +961,7 @@
+ 
+ #: src/compose.c:2776 src/folderview.c:825
+ msgid "Draft"
+-msgstr "Szablon"
++msgstr "Draft"
+ 
+ #: src/compose.c:2777
+ msgid "Save to draft folder"
+@@ -1092,7 +1093,7 @@
+ 
+ #: src/compose.c:3806
+ msgid "to Draft"
+-msgstr "do Szablonów"
++msgstr "do Draft"
+ 
+ #. gtk_container_set_border_width(GTK_CONTAINER(window), 8);
+ #: src/editaddress.c:176
+@@ -2506,9 +2507,8 @@
+ msgstr "/Konfigura_cja/Ustawienia _filtrowania"
+ 
+ #: src/mainwindow.c:575
 -#, fuzzy
- msgid "/_File/_Rescan folder tree"
--msgstr "/_Plik/_Od¶wie¿ drzewo katalogów"
-+msgstr "/_Plik/_Przeskanuj ponownie drzewo katalogów"
+ msgid "/_Configuration/_Template..."
+-msgstr "/Konfigura_cja/Ustawienia _filtrowania"
++msgstr "/Konfigura_cja/_Szablon..."
  
- #: src/mainwindow.c:367
- msgid "/_File/_Folder"
-@@ -4156,9 +4144,8 @@
+ #: src/mainwindow.c:576
+ msgid "/_Configuration/_Preferences for current account..."
+@@ -3171,9 +3171,8 @@
+ msgstr "Nazwa tego konta"
  
- #. S_COL_UNREAD
- #: src/prefs_summary_column.c:69
+ #: src/prefs_account.c:627
 -#, fuzzy
- msgid "Attachment"
--msgstr "Do³±cz"
-+msgstr "Za³±cznik"
+ msgid "Set as default"
+-msgstr " Ustaw jako podstawowe konto "
++msgstr "Ustaw jako domy¶lne"
  
- #. S_COL_MIME
- #: src/prefs_summary_column.c:70 src/summaryview.c:396
-@@ -4181,45 +4168,40 @@
- msgstr "Numer"
+ #: src/prefs_account.c:631
+ msgid "Personal information"
+@@ -3260,15 +3259,12 @@
+ msgstr "Filtruj wiadomo¶ci podczas odbierania"
  
- #: src/prefs_summary_column.c:166
+ #: src/prefs_account.c:862
 -#, fuzzy
- msgid "Creating summary column setting window...\n"
--msgstr "Tworzenie okna ustawieñ nag³ówka u¿ytkownika...\n"
-+msgstr "Tworzenie okna ustawieñ kolumn podgl±du...\n"
+ msgid "Default inbox"
+-msgstr "Standardowy Sign Key"
++msgstr "Domy¶lny inbox"
  
- #: src/prefs_summary_column.c:174
+ #: src/prefs_account.c:885
 -#, fuzzy
- msgid "Summary display item setting"
--msgstr "/Pod_sumowanie/Ustaw wy¶wietlane _elementy..."
-+msgstr "Ustawienia wy¶wietlanych elementów podsumowania"
+ msgid "(Unfiltered messages will be stored in this folder)"
+-msgstr ""
+-"Podczas wchodzenia do katalogu otwórz pierwsz± nieprzeczytan± wiadomo¶æ"
++msgstr "(Nieprzefiltrowane wiadomo¶ci zostan± zachowane w tym katalogu)"
+ 
+ #: src/prefs_account.c:901
+ msgid "IMAP server directory"
+@@ -3311,7 +3307,6 @@
+ msgstr "Plik podpisu"
+ 
+ #: src/prefs_account.c:1022
+-#, fuzzy
+ msgid "Automatically set the following addresses"
+ msgstr "Automatycznie ustaw nastêpuj±ce adresy"
+ 
+@@ -3424,9 +3419,8 @@
+ msgstr "Preferencje"
+ 
+ #: src/prefs_common.c:767
+-#, fuzzy
+ msgid "Quote"
+-msgstr "Kolejka"
++msgstr "Cytat"
+ 
+ #: src/prefs_common.c:769
+ msgid "Display"
+@@ -3494,7 +3488,6 @@
+ msgstr "News"
+ 
+ #: src/prefs_common.c:924
+-#, fuzzy
+ msgid ""
+ "Maximum number of articles to download\n"
+ "(unlimited if 0 is specified)"
+@@ -3607,6 +3600,8 @@
+ "If `Automatic' is selected, the optimal encoding\n"
+ "for the current locale will be used."
+ msgstr ""
++"Je¶li wybrano 'Automatycznie' to zostanie u¿yte\n"
++"optymalne kodowanie dla bie¿±cych ustawieñ lokalnych."
+ 
+ #: src/prefs_common.c:1142
+ msgid "Signature separator"
+@@ -3630,11 +3625,11 @@
+ 
+ #: src/prefs_common.c:1193
+ msgid "Wrap quotation"
+-msgstr "Dziel cytat"
++msgstr "Zawijaj cytat"
+ 
+ #: src/prefs_common.c:1195
+ msgid "Wrap before sending"
+-msgstr "Dziel przed wys³aniem"
++msgstr "Zawijaj przed wys³aniem"
+ 
+ #: src/prefs_common.c:1205
+ msgid "Automatically select account for replies"
+@@ -3646,9 +3641,8 @@
+ 
+ #. reply
+ #: src/prefs_common.c:1248
+-#, fuzzy
+ msgid "Reply format"
+-msgstr "Format daty"
++msgstr "Format odpowiedzi"
+ 
+ #: src/prefs_common.c:1263 src/prefs_common.c:1302
+ msgid "Quotation mark"
+@@ -3656,9 +3650,8 @@
+ 
+ #. forward
+ #: src/prefs_common.c:1287
+-#, fuzzy
+ msgid "Forward format"
+-msgstr "Przeka¿"
++msgstr "Format przekazywania"
+ 
+ #: src/prefs_common.c:1331
+ msgid " Description of symbols "
+@@ -3796,7 +3789,6 @@
+ msgstr "Wykonaj natychmiastowo podczas przenoszenia lub kasowania wiadomo¶ci"
+ 
+ #: src/prefs_common.c:1815
+-#, fuzzy
+ msgid ""
+ "(Messages will be marked until execution\n"
+ " if this is turned off)"
+@@ -4017,6 +4009,24 @@
+ "Quoted message body without signature\n"
+ "Literal %"
+ msgstr ""
++"Data\n"
++"Od\n"
++"Pe³na nazwa nadawcy\n"
++"Imiê nadawcy\n"
++"Inicja³ nadawcy\n"
++"Temat\n"
++"Do\n"
++"Kopia\n"
++"Grupy news\n"
++"ID wiadomo¶ci\n"
++"\n"
++"Je¶li ustawiono x, wy¶wietla expr\n"
++"\n"
++"Cia³o wiadomo¶ci\n"
++"Cia³o cytowanej wiadomo¶ci\n"
++"Cia³o wiadomo¶ci bez sygnatury\n"
++"Cia³o cytowanej wiadomo¶ci bez sygnatury\n"
++"Literalny %"
+ 
+ #: src/prefs_common.c:2646
+ msgid "Font selection"
+@@ -4212,7 +4222,6 @@
+ msgstr "Ustawienia wy¶wietlanych elementów podsumowania"
  
  #: src/prefs_summary_column.c:191
+-#, fuzzy
  msgid ""
- "Select items to be displayed on the summary view.\n"
- "You can modify the order by Up / Down button, or dragging the items."
- msgstr ""
-+"Wybierz wy¶wietlane w widoku podsumowania elementy.\n"
-+"Mo¿esz zmieniæ ich kolejno¶æ przez Góra / Dó³ lub przeci±gaj±c elementy."
+ "Select items to be displayed on the summary view. You can modify\n"
+ "the order by using the Up / Down button, or dragging the items."
+@@ -4242,36 +4251,32 @@
  
- #: src/prefs_summary_column.c:218
+ #. self-documenting
+ #: src/prefs_template.c:136
 -#, fuzzy
- msgid "Available items"
--msgstr "Dostêpne adresy"
-+msgstr "Dostêpne elementy"
+ msgid "Template name"
+-msgstr "Nazwa nag³ówka"
++msgstr "Nazwa szablonu"
  
- #: src/prefs_summary_column.c:236
--#, fuzzy
- msgid "  ->  "
--msgstr " -> "
-+msgstr "  ->  "
+ #: src/prefs_template.c:199
+ msgid " Symbols "
+-msgstr ""
++msgstr " Symbole "
  
- #: src/prefs_summary_column.c:240
+ #: src/prefs_template.c:213
 -#, fuzzy
- msgid "  <-  "
--msgstr " <- "
-+msgstr "  <-  "
+ msgid "Registered templates"
+-msgstr "Zarejestrowane regu³y"
++msgstr "Zarejestrowane szablony"
  
- #: src/prefs_summary_column.c:261
--#, fuzzy
- msgid "Displayed items"
--msgstr "Wy¶wietlone nag³ówki "
-+msgstr "Wy¶wietlone elementy"
+ #: src/prefs_template.c:233
+ msgid "Templates"
+-msgstr ""
++msgstr "Szablony"
  
- #: src/prefs_summary_column.c:302
+ #: src/prefs_template.c:341
+ msgid "Template"
+-msgstr ""
++msgstr "Szablon"
+ 
+ #: src/prefs_template.c:441
 -#, fuzzy
- msgid " Revert to default "
--msgstr " Ustaw jako podstawowe konto "
-+msgstr " Przywróæ domy¶lne "
+ msgid "Delete template"
+-msgstr "Usuñ wiadomo¶æ"
++msgstr "Usuñ szablon"
+ 
+ #: src/prefs_template.c:442
+-#, fuzzy
+ msgid "Do you really want to delete this template?"
+-msgstr "Czy naprawdê chcesz usun±æ ten nag³ówek?"
++msgstr "Czy naprawdê chcesz usun±æ ten szablon?"
  
  #: src/procmime.c:694
  msgid "procmime_get_text_content(): Code conversion failed.\n"
+@@ -4986,32 +4991,32 @@
+ #: src/template.c:43
+ #, c-format
+ msgid "%s:%d loading template from %s\n"
+-msgstr ""
++msgstr "%s:%d wczytywanie szablonu z %s\n"
+ 
+ #: src/template.c:110
+ #, c-format
+ msgid "%s:%d reading templates dir %s\n"
+-msgstr ""
++msgstr "%s:%d czytanie katalogu szablonów %s\n"
+ 
+ #: src/template.c:128
+-#, fuzzy, c-format
++#, c-format
+ msgid "%s:%d found file %s\n"
+-msgstr "Nie mo¿na otworzyæ pliku %s\n"
++msgstr "%s:%d znaleziono plik %s\n"
+ 
+ #: src/template.c:131
+ #, c-format
+ msgid "%s:%d %s is not an ordinary file\n"
+-msgstr ""
++msgstr "%s:%d %s nie jest zwyk³ym plikiem\n"
+ 
+ #: src/template.c:159
+-#, fuzzy, c-format
++#, c-format
+ msgid "file %s allready exists\n"
+-msgstr "%s ju¿ istnieje"
++msgstr "plik %s ju¿ istnieje\n"
+ 
+ #: src/template.c:186
+ #, c-format
+ msgid "%s:%d writing template \"%s\" to %s\n"
+-msgstr ""
++msgstr "%s:%d zapisywanie szablonu \"%s\" do %s\n"
+ 
+ #: src/textview.c:138
+ msgid "Creating text view...\n"
