@@ -8,9 +8,9 @@ Name:		sylpheed
 Version:	0.5.3
 Release:	2
 License:	GPL
-Group:		X11/Applications
-Group(de):	X11/Applikationen
-Group(pl):	X11/Aplikacje
+Group:		X11/Applications/Networking
+Group(de):	X11/Applikationen/Netzwerkwesen
+Group(pl):	X11/Aplikacje/Sieciowe
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
 Patch0:		%{name}-gtkhtml.patch
@@ -41,7 +41,6 @@ integrated NetNews client (partially implemented) o ability of
 keyboard-only operation o Mew/Wanderlust-like key bind o multipart
 MIME o unlimited multiple account handling o assortment function o
 address book
-
 
 %description -l pl
 Szybki klient poczty o mo¿liwo¶ciach takich jak: o przyjazny,
