@@ -27,6 +27,7 @@ BuildRequires:	imlib-devel
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
 Requires:	faces
+Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	sylpheed-claws
