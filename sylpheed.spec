@@ -1,8 +1,12 @@
+#
+# Conditional build:
+# _with_jconv	- with jconv support
+#
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	0.8.0
+Version:	0.8.1
 Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
@@ -19,7 +23,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gtkhtml-devel >= 0.10.1
 BuildRequires:	gpgme-devel
 BuildRequires:	imlib-devel
-BuildRequires:	libjconv-devel
+%{?_with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
 Requires:	faces
@@ -80,7 +84,7 @@ aclocal
 %{__autoheader}
 %{__automake}
 %configure \
-	--enable-jconv \
+	--%{?_with_jconv:en}%{!?_with_jconv:dis}able-jconv \
 	--enable-impib \
 	--enable-gdk-pixbuf \
 	--enable-threads \
