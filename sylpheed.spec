@@ -26,7 +26,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
+%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.6j}
 %{!?_without_ldap:BuildRequires:        openldap-devel}
 Requires:	faces
 Requires:	mailcap
