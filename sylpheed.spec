@@ -9,6 +9,7 @@ Group(de):	X11/Applikationen
 Group(pl):	X11/Aplikacje
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
+Patch0: %{name}-forward-3.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	libtool
@@ -40,6 +41,7 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 libtoolize --copy --force
