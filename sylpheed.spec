@@ -38,9 +38,9 @@ BuildRequires:	gtkhtml-devel >= 0.10.1
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
 Requires:	faces
-Conflicts:	sylpheed-claws
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+Conflicts:	sylpheed-claws
 
 %define		_prefix		/usr/X11R6
 %define		_mandir		%{_prefix}/man
