@@ -12,10 +12,10 @@ Group(de):	X11/Applikationen/Netzwerkwesen
 Group(pl):	X11/Aplikacje/Sieciowe
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
-#Patch0:		%{name}-open-url.patch
-#Patch1:		%{name}-fix-compose-cmdline.patch
+Patch0:		%{name}-open-url.patch
+Patch1:		%{name}-fix-compose-cmdline.patch
 Patch2:		%{name}-polish-po.patch
-#Patch3:		%{name}-0.6.2-forward.patch
+Patch3:		%{name}-0.6.2-forward.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	imlib-devel
