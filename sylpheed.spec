@@ -29,8 +29,6 @@ URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Obsoletes:	sylpheed-claws
 
-%define		_prefix		/usr/X11R6
-%define		_mandir		%{_prefix}/man
 
 %description
 This program is an X based fast e-mail client which has features (or
