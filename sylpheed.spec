@@ -11,12 +11,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	1.9.6
-Release:	0.1
+Version:	1.9.7
+Release:	0.9
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/v1.9/%{name}-%{version}.tar.bz2
-# Source0-md5:	1cdee69bd724f20786e5390891eb4c23
+# Source0-md5:	ef5ddd410cf19007a502f44274bee04c
 Patch0:		%{name}-desktop.patch
 Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
 Patch2:		%{name}-nolibs.patch
@@ -24,10 +24,8 @@ BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
-BuildRequires:	gdk-pixbuf-devel >= 0.8
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
-BuildRequires:	gtk+-devel >= 2.4.0
-BuildRequires:	imlib-devel
+BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_ldap:BuildRequires:	openldap-devel}
@@ -91,7 +89,6 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 
 %build
 %{__libtoolize}
-%{__gettextize}
 %{__aclocal} -I ac
 %{__autoheader}
 %{__autoconf}
