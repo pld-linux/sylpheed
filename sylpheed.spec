@@ -6,12 +6,13 @@
 # _without_ipv6		- without ipv6 support
 # _without_ldap		- without ldap support
 # _without_faces	- without compfaces support
+# _with_gtk2		- with gtk+2 gui
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.9.2
-Release:	1
+Release:	1.1
 License:	GPL
 Group:		X11/Applications/Networking
 # Source0-md5:	0724244e0d2687e190e45c17c770c248
@@ -19,6 +20,7 @@ Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
+Patch3:		%{name}-gtk2.patch.bz2
 BuildRequires:	autoconf
 BuildRequires:	automake
 %{!?_without_faces:BuildRequires:	faces-devel}
@@ -26,6 +28,8 @@ BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
 %{!?_without_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
+%{?_with_gtk2:BuildRequires:	gtk+2-devel}
+%{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 %{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
@@ -76,15 +80,19 @@ recursos como:
 
 %prep
 %setup -q
-%patch0 -p1
+%{!?_with_gtk2:%patch0 -p1}
 %patch1 -p1
 %patch2 -p0
+%{?_with_gtk2:%patch3 -p1}
 
 %build
 rm -f missing
+%{?_with_gtk2:glib-gettextize --copy --force}
 %{__libtoolize}
-%{__gettextize}
-%{__aclocal}
+%{?_with_gtk2:intltoolize --copy --force}
+%{!?_with_gtk2:%{__gettextize}}
+%{__aclocal} %{?_with_gtk2:-I ac}
+%{?_with_gtk2:%{__autoheader}}
 %{__autoconf}
 %{__automake}
 %configure \
@@ -98,6 +106,8 @@ rm -f missing
 	%{?_without_faces: --disable-compfaces}
 
 %{__make}
+
+%{?_with_gtk2: /bin/sh po/poconv.sh}
 
 %install
 rm -rf $RPM_BUILD_ROOT
