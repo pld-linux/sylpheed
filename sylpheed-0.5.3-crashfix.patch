@@ -1,0 +1,11 @@
+--- src/gtkutils.c.crashfix	Wed Aug 15 20:09:31 2001
++++ src/gtkutils.c	Wed Aug 15 20:46:48 2001
+@@ -173,6 +173,8 @@
+ {
+ 	GtkCTreeNode *parent;
+ 
++	if (!node) return NULL;
++
+ 	if (GTK_CTREE_ROW(node)->children)
+ 		return GTK_CTREE_ROW(node)->children;
+ 

@@ -1,0 +1,107 @@
+--- src/inc.c.updateopt	Wed Aug 15 20:09:31 2001
++++ src/inc.c	Wed Aug 15 21:39:58 2001
+@@ -74,7 +74,8 @@
+ 
+ #define MSGBUFSIZE	8192
+ 
+-static void inc_finished		(MainWindow		*mainwin);
++static void inc_finished		(MainWindow		*mainwin,
++					 gboolean		 new_messages);
+ static void inc_account_mail		(PrefsAccount		*account,
+ 					 MainWindow		*mainwin);
+ 
+@@ -113,23 +114,34 @@
+ 
+ static gint inc_autocheck_func		(gpointer	 data);
+ 
+-static void inc_finished(MainWindow *mainwin)
++/**
++ * inc_finished:
++ * @mainwin: Main window.
++ * @new_messages: TRUE if some messages have been received.
++ * 
++ * Update the folder view and the summary view after receiving
++ * messages.  If @new_messages is FALSE, this function avoids unneded
++ * updating.
++ **/
++static void inc_finished(MainWindow *mainwin, gboolean new_messages)
+ {
+ 	FolderItem *item;
+ 
+ 	if (prefs_common.scan_all_after_inc)
+ 		folderview_update_all_node();
+ 
+-	if (prefs_common.open_inbox_on_inc) {
+-		item = cur_account && cur_account->inbox
+-			? folder_find_item_from_path(cur_account->inbox)
+-			: folder_get_default_inbox();
+-		folderview_unselect(mainwin->folderview);
+-		folderview_select(mainwin->folderview, item);
+-	} else {
+-		item = mainwin->summaryview->folder_item;
+-		folderview_unselect(mainwin->folderview);
+-		folderview_select(mainwin->folderview, item);
++	if (new_messages || prefs_common.scan_all_after_inc) {
++		if (prefs_common.open_inbox_on_inc) {
++			item = cur_account && cur_account->inbox
++				? folder_find_item_from_path(cur_account->inbox)
++				: folder_get_default_inbox();
++			folderview_unselect(mainwin->folderview);
++			folderview_select(mainwin->folderview, item);
++		} else {
++			item = mainwin->summaryview->folder_item;
++			folderview_unselect(mainwin->folderview);
++			folderview_select(mainwin->folderview, item);
++		}
+ 	}
+ }
+ 
+@@ -168,7 +180,8 @@
+ 		inc_account_mail(cur_account, mainwin);
+ 	}
+ 
+-	inc_finished(mainwin);
++	/* FIXME: no information about POP3 receive, cannot optimize */
++	inc_finished(mainwin, TRUE);
+ 	inc_autocheck_timer_set();
+ }
+ 
+@@ -198,15 +211,17 @@
+ {
+ 	GList *list, *queue_list = NULL;
+ 	IncProgressDialog *inc_dialog;
++	gint received_from_spool = 0;
+ 
+ 	inc_autocheck_timer_remove();
+ 	summary_write_cache(mainwin->summaryview);
+ 
+-	if (prefs_common.inc_local) inc_spool();
++	if (prefs_common.inc_local)
++		received_from_spool = inc_spool();
+ 
+ 	list = account_get_list();
+ 	if (!list) {
+-		inc_finished(mainwin);
++		inc_finished(mainwin, received_from_spool != 0);
+ 		inc_autocheck_timer_set();
+ 		return;
+ 	}
+@@ -223,7 +238,7 @@
+ 	}
+ 
+ 	if (!queue_list) {
+-		inc_finished(mainwin);
++		inc_finished(mainwin, received_from_spool != 0);
+ 		inc_autocheck_timer_set();
+ 		return;
+ 	}
+@@ -245,7 +260,8 @@
+ 
+ 	inc_start(inc_dialog);
+ 
+-	inc_finished(mainwin);
++	/* FIXME: no information about POP3 receive, cannot optimize */
++	inc_finished(mainwin, TRUE);
+ 	inc_autocheck_timer_set();
+ }
+ 
