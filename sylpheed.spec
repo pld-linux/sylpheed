@@ -15,6 +15,7 @@ Source1:	%{name}.desktop
 Patch0:		%{name}-open-url.patch
 Patch1:		%{name}-fix-compose-cmdline.patch
 Patch2:		%{name}-polish-po.patch
+Patch3:		%{name}-%{version}-forward.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	imlib-devel
@@ -52,6 +53,7 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %patch0 -p1
 %patch1 -p0
 %patch2 -p1
+%patch3 -p1
 
 %build
 rm -f missing
