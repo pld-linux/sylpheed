@@ -1,3 +1,7 @@
+
+# Conditional build:
+# _with_jconv		- adds much more codesets to choice from
+
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
@@ -21,6 +25,7 @@ BuildRequires:	gal-devel >= 0.9
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	glib-devel
 BuildRequires:	gtkhtml-devel >= 0.10.1
+%{?_with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	imlib-devel
 BuildRequires:	libtool
 URL:		http://sylpheed.good-day.net/
@@ -47,11 +52,11 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 
 %prep
 %setup -q
-%patch0 -p1
+#%patch0 -p1
 #%patch1 -p1
-%patch2 -p1
-%patch3 -p0
-%patch4 -p1
+#%patch2 -p1
+#%patch3 -p0
+#%patch4 -p1
 
 %build
 rm missing
@@ -62,6 +67,7 @@ autoconf
 autoheader
 automake --add-missing --foreign --copy
 %configure \
+%{!?_with_jconv:	--disable-jconv} \
 	--enable-threads \
 	--enable-ipv6
 
