@@ -1,676 +1,41 @@
-diff -Nur sylpheed-0.6.2/po/pl.po sylpheed-0.6.2.old/po/pl.po
---- sylpheed-0.6.2/po/pl.po	Sun Sep 16 16:49:53 2001
-+++ sylpheed-0.6.2.old/po/pl.po	Mon Sep 17 11:32:32 2001
-@@ -210,9 +210,8 @@
- msgstr "+Nie"
+diff -Nur sylpheed-0.6.3.orig/po/pl.po sylpheed-0.6.3/po/pl.po
+--- sylpheed-0.6.3.orig/po/pl.po	Mon Oct  8 16:29:00 2001
++++ sylpheed-0.6.3/po/pl.po	Tue Oct  9 09:01:16 2001
+@@ -1077,9 +1077,8 @@
  
- #: src/addressadd.c:165
+ #. gtk_container_set_border_width(GTK_CONTAINER(window), 8);
+ #: src/editaddress.c:176
 -#, fuzzy
- msgid "Add Address to Book"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "Dodaj adres do ksi±¿ki adresowej"
- 
- #: src/addressadd.c:195 src/compose.c:3038 src/select-keys.c:302
- msgid "Address"
-@@ -224,9 +223,8 @@
- msgstr "Uwagi"
- 
- #: src/addressadd.c:227
--#, fuzzy
- msgid "Select Address Book Folder"
--msgstr "Wybierz katalog"
-+msgstr "Wybierz katalog ksi±¿ki adresowej"
- 
- #: src/addressadd.c:242 src/addressbook.c:1659 src/compose.c:1668
- #: src/compose.c:3369 src/compose.c:3941 src/editaddress.c:653
-@@ -247,24 +245,20 @@
- msgstr "/_Plik"
- 
- #: src/addressbook.c:341
--#, fuzzy
- msgid "/_File/New _Book"
--msgstr "/_Plik/Nowa _grupa"
-+msgstr "/_Plik/Nowa _ksi±¿ka"
- 
- #: src/addressbook.c:342
--#, fuzzy
- msgid "/_File/New _V-Card"
--msgstr "/_Plik/Nowy _adres"
-+msgstr "/_Plik/Nowy _V-Card"
- 
- #: src/addressbook.c:344
--#, fuzzy
- msgid "/_File/New _J-Pilot"
--msgstr "/_Plik/Nowa _grupa"
-+msgstr "/_Plik/Nowy _J-Pilot"
- 
- #: src/addressbook.c:347
--#, fuzzy
- msgid "/_File/New _Server"
--msgstr "/_Plik/Nowy _folder"
-+msgstr "/_Plik/Nowy _Serwer"
- 
- #: src/addressbook.c:349 src/addressbook.c:352 src/compose.c:382
- #: src/mainwindow.c:369 src/mainwindow.c:372
-@@ -280,48 +274,40 @@
- msgstr "/_Plik/_Usuñ"
- 
- #: src/addressbook.c:353
--#, fuzzy
- msgid "/_File/_Save"
--msgstr "/_Plik/Zapi_sz jako..."
-+msgstr "/_Plik/Zapi_sz"
- 
- #: src/addressbook.c:354 src/compose.c:383 src/mainwindow.c:373
- msgid "/_File/_Close"
- msgstr "/_Plik/_Zamknij"
- 
- #: src/addressbook.c:355
--#, fuzzy
- msgid "/_Address"
--msgstr "Adres"
-+msgstr "/_Adres"
- 
- #: src/addressbook.c:356
--#, fuzzy
- msgid "/_Address/New _Address"
--msgstr "/_Plik/Nowy _adres"
-+msgstr "/_Adres/Nowy _adres"
- 
- #: src/addressbook.c:357
--#, fuzzy
- msgid "/_Address/New _Group"
--msgstr "/_Plik/Nowa _grupa"
-+msgstr "/_Adres/Nowa _grupa"
- 
- #: src/addressbook.c:358
--#, fuzzy
- msgid "/_Address/New _Folder"
--msgstr "/_Plik/Nowy _folder"
-+msgstr "/_Adres/Nowy _Folder"
- 
- #: src/addressbook.c:359
--#, fuzzy
- msgid "/_Address/---"
--msgstr "Adres"
-+msgstr "/_Adres/---"
- 
- #: src/addressbook.c:360
--#, fuzzy
- msgid "/_Address/_Edit"
--msgstr "/_Plik/_Edycja"
-+msgstr "/_Adres/_Edycja"
- 
- #: src/addressbook.c:361
--#, fuzzy
- msgid "/_Address/_Delete"
--msgstr "/Wiado_mo¶æ/_Usuñ"
-+msgstr "/_Adres/_Usuñ"
- 
- #: src/addressbook.c:362 src/compose.c:424 src/mainwindow.c:573
- msgid "/_Help"
-@@ -332,17 +318,14 @@
- msgstr "/Pomo_c/_O programie"
- 
- #: src/addressbook.c:383 src/addressbook.c:393
--#, fuzzy
- msgid "/New _Address"
- msgstr "/Nowy _adres"
- 
- #: src/addressbook.c:384 src/addressbook.c:394
--#, fuzzy
- msgid "/New _Group"
- msgstr "/Nowa _grupa"
- 
- #: src/addressbook.c:385 src/addressbook.c:395
--#, fuzzy
- msgid "/New _Folder"
- msgstr "/Nowy _folder"
- 
-@@ -425,14 +408,12 @@
- msgstr ""
- 
- #: src/addressbook.c:1659
--#, fuzzy
- msgid "Folder only"
--msgstr "Katalog"
-+msgstr "Tylko katalog"
- 
- #: src/addressbook.c:1659
--#, fuzzy
- msgid "Folder and Addresses"
--msgstr "Usuñ adres(y)"
-+msgstr "Katalog i adresy"
- 
- #: src/addressbook.c:1664
- #, c-format
-@@ -441,108 +422,114 @@
- 
- #: src/addressbook.c:2338 src/addressbook.c:2471
- msgid "New user, could not save index file."
--msgstr ""
-+msgstr "Nowy u¿ytkownik, nie mo¿na zapisaæ pliku indeksu."
- 
- #: src/addressbook.c:2342 src/addressbook.c:2475
- msgid "New user, could not save address book files."
--msgstr ""
-+msgstr "Nowy u¿ytkownik, nie mo¿na zapisaæ plików ksi±¿ki adresowej."
- 
- #: src/addressbook.c:2352 src/addressbook.c:2485
- msgid "Old address book converted successfully."
--msgstr ""
-+msgstr "Poprawnie skonwertowano ksi±¿kê adresow±."
- 
- #: src/addressbook.c:2357
- msgid ""
- "Old address book converted,\n"
- "could not save new address index file"
- msgstr ""
-+"Stara ksi±¿ka adresowa zosta³a skonwertowana,\n"
-+"nie mo¿na zapisaæ pliku indeksu nowego adresu."
- 
- #: src/addressbook.c:2370
- msgid ""
- "Could not convert address book,\n"
- "but created empty new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej,\n"
-+"stworzono nowe pliki pustej ksi±¿ki adresowej."
- 
- #: src/addressbook.c:2376
- msgid ""
- "Could not convert address book,\n"
- "could not create new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej,\n"
-+"nie mo¿na utowrzyæ nowych plików ksi±¿ki adresowej."
- 
- #: src/addressbook.c:2381
- msgid ""
- "Could not convert address book\n"
- "and could not create new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej\n"
-+"nie mo¿na utworzyæ nowych plików ksi±¿ki adresowej."
-+
- 
- #: src/addressbook.c:2388
- msgid "Addressbook conversion error"
--msgstr ""
-+msgstr "B³±d konwersji ksi±¿ki adresowej"
- 
- #: src/addressbook.c:2392
--#, fuzzy
- msgid "Addressbook conversion"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "Konwersja ksi±¿ki adresowej"
- 
- #: src/addressbook.c:2427
--#, fuzzy
- msgid "Addressbook Error"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "B³±d ksi±¿ki adresowej"
- 
- #: src/addressbook.c:2428 src/addressbook.c:2528
- msgid "Could not read address index"
--msgstr ""
-+msgstr "Nie mo¿na odczytaæ indeksu adresu"
- 
- #: src/addressbook.c:2490
- msgid "Old address book converted, could not save new address index file"
--msgstr ""
-+msgstr "Skonwertowano star± ksi±¿kê adresow±, nie mo¿na zapisaæ nowego pliku indeksu adresu"
- 
- #: src/addressbook.c:2504
- msgid ""
- "Could not convert address book, but created empty new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej, stworzono nowe pute pliki ksi±¿ki adresowej."
- 
- #: src/addressbook.c:2510
- msgid ""
- "Could not convert address book, could not create new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej, nie mo¿na stworzyæ nowych plików ksi±¿ki adresowej" 
- 
- #: src/addressbook.c:2516
- msgid ""
- "Could not convert address book and could not create new address book files."
- msgstr ""
-+"Nie mo¿na skonwertowaæ ksi±¿ki adresowej i nie mo¿na stworzyæ nowych plików ksi±¿ki adresowej."
- 
- #: src/addressbook.c:2534
- msgid "Addressbook Conversion Error"
--msgstr ""
-+msgstr "B³±d konwersji ksi±¿ki adresowej"
- 
- #: src/addressbook.c:2540
--#, fuzzy
- msgid "Addressbook Conversion"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "Konwersja ksi±¿ki adresowej"
- 
- #: src/addressbook.c:3031 src/prefs_common.c:698
- msgid "Interface"
- msgstr "Interfejs"
- 
- #: src/addressbook.c:3047
--#, fuzzy
- msgid "Address Book"
- msgstr "Ksi±¿ka adresowa"
- 
- #: src/addressbook.c:3063
- msgid "Person"
--msgstr ""
-+msgstr "Osoba"
- 
- #: src/addressbook.c:3079
--#, fuzzy
- msgid "EMail Address"
- msgstr "Adres e-mail"
- 
- #: src/addressbook.c:3095
--#, fuzzy
- msgid "Group"
--msgstr "Nowa grupa"
-+msgstr "Grupa"
- 
- #: src/addressbook.c:3111 src/folderview.c:250
- msgid "Folder"
-@@ -557,9 +544,8 @@
- msgstr ""
- 
- #: src/addressbook.c:3175
--#, fuzzy
- msgid "LDAP Server"
--msgstr "Serwer"
-+msgstr "Serwer LDAP"
- 
- #. Old address book
- #: src/addrindex.c:93 src/addrindex.c:97 src/addrindex.c:104
-@@ -608,7 +594,7 @@
- 
- #: src/colorlabel.c:48
- msgid "Sky blue"
--msgstr "Kolor nieba"
-+msgstr "Jasnoniebieski"
- 
- #: src/colorlabel.c:49
- msgid "Blue"
-@@ -685,12 +671,11 @@
- 
- #: src/compose.c:394
- msgid "/_Edit/_Wrap current paragraph"
--msgstr ""
-+msgstr "/_Edycja/Za_wiñ bie¿±cy akapit"
- 
- #: src/compose.c:395
--#, fuzzy
- msgid "/_Edit/Wrap all long _lines"
--msgstr "/_Edycja/Zawijaj _linie"
-+msgstr "/_Edycja/Zawijaj wszystkie d³ugie _linie"
- 
- #: src/compose.c:397
- msgid "/_Edit/Edit with e_xternal editor"
-@@ -888,9 +873,8 @@
- msgstr "nie mo¿na otworzyæ pliku zaznaczeñ\n"
- 
- #: src/compose.c:1911
--#, fuzzy
- msgid "can't remove the old message\n"
--msgstr "nie mo¿na wyrzuciæ starego szablonu wiadomo¶ci\n"
-+msgstr "nie mo¿na wyrzuciæ starej wiadomo¶ci\n"
- 
- #: src/compose.c:1928
- msgid "queueing message...\n"
-@@ -991,7 +975,7 @@
- 
- #: src/compose.c:3028
- msgid "Wrap current paragraph"
--msgstr ""
-+msgstr "Zawiñ bie¿±cy akapit"
- 
- #: src/compose.c:3236
- msgid "Invalid MIME type."
-@@ -1089,63 +1073,55 @@
- msgstr ""
- 
- #: src/editaddress.c:455
--#, fuzzy
- msgid "An E-Mail address must be supplied."
--msgstr "Nie okre¶lono adresu e-mail."
-+msgstr "Adres e-mail musi byæ podany."
- 
- #: src/editaddress.c:565
- msgid "A Name and Value must be supplied."
--msgstr ""
-+msgstr "Nazwa i Warto¶æ musz± byæ podane."
- 
- #. gtk_container_set_border_width(GTK_CONTAINER(window), 0);
- #: src/editaddress.c:619
- msgid "Edit Person Data"
--msgstr ""
-+msgstr "Edytuj dane osoby"
- 
- #: src/editaddress.c:716
--#, fuzzy
- msgid "Display Name"
--msgstr "Wy¶wietlanie"
-+msgstr "Wy¶wietlana nazwa"
- 
- #: src/editaddress.c:722 src/editaddress.c:726
--#, fuzzy
- msgid "Last Name"
--msgstr "Nazwa"
-+msgstr "Nazwisko"
- 
- #: src/editaddress.c:723 src/editaddress.c:725
--#, fuzzy
- msgid "First Name"
--msgstr "Nazwa pliku"
-+msgstr "Imiê"
- 
- #: src/editaddress.c:728
--#, fuzzy
- msgid "Nick Name"
--msgstr "Nazwa"
-+msgstr "Nick"
- 
- #: src/editaddress.c:762 src/editaddress.c:810 src/editaddress.c:1016
- #: src/editgroup.c:249
--#, fuzzy
- msgid "E-Mail Address"
- msgstr "Adres e-mail"
- 
- #: src/editaddress.c:762 src/editaddress.c:819
--#, fuzzy
- msgid "Alias"
--msgstr "Zawsze"
-+msgstr "Alias"
- 
- #. Buttons
- #: src/editaddress.c:846
- msgid "Move Up"
--msgstr ""
-+msgstr "W górê"
- 
- #: src/editaddress.c:849
--#, fuzzy
- msgid "Move Down"
- msgstr "W dó³"
- 
- #: src/editaddress.c:855 src/editaddress.c:985
- msgid "Modify"
--msgstr ""
-+msgstr "Zmieñ"
- 
- #: src/editaddress.c:861 src/editaddress.c:991 src/summary_search.c:191
- msgid "Clear"
-@@ -1156,63 +1132,56 @@
- msgstr "Warto¶æ"
- 
- #: src/editaddress.c:1015
--#, fuzzy
- msgid "Basic Data"
--msgstr "Podstawowe"
-+msgstr "Podstawowe dane"
- 
- #: src/editaddress.c:1017
- msgid "User Attributes"
--msgstr ""
-+msgstr "Atrybuty u¿ytkownika"
- 
- #: src/editbook.c:114
- msgid "File appears to be Ok."
--msgstr ""
-+msgstr "Plik wygl±da na poprawny"
- 
- #: src/editbook.c:117
- msgid "File does not appear to be a valid address book format."
--msgstr ""
-+msgstr "Plik nie ma poprawnego formatu ksi±¿ki adresowej."
- 
- #: src/editbook.c:120 src/editjpilot.c:192 src/editvcard.c:99
--#, fuzzy
- msgid "Could not read file."
--msgstr "Nie mo¿na zapisaæ do pliku\n"
-+msgstr "Nie mo¿na odczytaæ pliku."
- 
- #: src/editbook.c:168 src/editbook.c:278
--#, fuzzy
- msgid "Edit Addressbook"
--msgstr "Edytuj adres"
-+msgstr "Edytuj ksi±¿kê adresow±"
- 
- #: src/editbook.c:197 src/editjpilot.c:302 src/editvcard.c:217
- msgid " Check File "
--msgstr ""
-+msgstr " Sprawd¼ plik "
- 
- #: src/editbook.c:202 src/editjpilot.c:307 src/editvcard.c:222
--#, fuzzy
- msgid "File"
--msgstr "/_Plik"
-+msgstr "Plik"
- 
- #: src/editbook.c:297
--#, fuzzy
- msgid "Add New Addressbook"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "Dodaj now± ksi±¿kê adresow±"
- 
- #: src/editgroup.c:103
- msgid "A Group Name must be supplied."
--msgstr ""
-+msgstr "Nazwa grupy musi byæ podana."
- 
- #: src/editgroup.c:255
--#, fuzzy
- msgid "Edit Group Data"
--msgstr "Edytuj grupê"
-+msgstr "Edytuj dane grupy"
- 
- #: src/editgroup.c:283
- msgid "Group Name"
--msgstr ""
-+msgstr "Nazwa grupy"
- 
- #: src/editgroup.c:302
--#, fuzzy
- msgid "Addresses in Group"
--msgstr "Ksi±¿ka adresowa"
-+msgstr "Adresy w grupie"
- 
- #: src/editgroup.c:304
- msgid " -> "
-@@ -1223,23 +1192,20 @@
- msgstr ""
- 
- #: src/editgroup.c:333
--#, fuzzy
- msgid "Available Addresses"
--msgstr "Adres e-mail"
-+msgstr "Dostêpne adresy"
- 
- #: src/editgroup.c:397
- msgid "Move E-Mail Addresses to or from Group with arrow buttons"
--msgstr ""
-+msgstr "Przenie¶ adres e-mail do lub z innej grupy przyciskami strza³ek"
- 
- #: src/editgroup.c:446
--#, fuzzy
- msgid "Edit Group Details"
--msgstr "Edytuj grupê"
-+msgstr "Edytuj szczegó³y grupy"
- 
- #: src/editgroup.c:449
--#, fuzzy
- msgid "Add New Group"
--msgstr "Nowa grupa"
-+msgstr "Dodaj now± grupê"
- 
- #: src/editgroup.c:497
- msgid "Edit folder"
-@@ -1259,88 +1225,79 @@
- 
- #: src/editjpilot.c:189
- msgid "File does not appear to be JPilot format."
--msgstr ""
-+msgstr "Plik nie wygl±da na plik w formacie JPilot"
- 
- #: src/editjpilot.c:225
--#, fuzzy
- msgid "Select JPilot File"
--msgstr "Wybierz importowany plik"
-+msgstr "Wybierz plik JPilot"
- 
- #: src/editjpilot.c:273 src/editjpilot.c:400
- msgid "Edit JPilot Entry"
--msgstr ""
-+msgstr "Edytuj wpis JPilot"
- 
- #: src/editjpilot.c:314 src/editldap.c:340 src/editvcard.c:229
--#, fuzzy
- msgid " ... "
--msgstr "Edycja..."
-+msgstr " ... "
- 
- #: src/editjpilot.c:319
- msgid "Additional e-Mail address item(s)"
--msgstr ""
-+msgstr "Dodatkowe adresy e-mail"
- 
- #: src/editjpilot.c:407
- msgid "Add New JPilot Entry"
--msgstr ""
-+msgstr "Nowy wpis JPilot"
- 
- #: src/editldap.c:164
- msgid "Connected successfully to server"
--msgstr ""
-+msgstr "Po³±czono z serwerem"
- 
- #: src/editldap.c:167 src/editldap_basedn.c:294
--#, fuzzy
- msgid "Could not connect to server"
--msgstr "Nie mo¿na po³±czyæ siê z serwerem POP3: %s:%d"
-+msgstr "Nie mo¿na po³±czyæ siê z serwerem"
- 
- #: src/editldap.c:215 src/editldap.c:534
- msgid "Edit LDAP Server"
--msgstr ""
-+msgstr "Edytuj serwer LDAP"
- 
- #: src/editldap.c:307 src/editldap_basedn.c:164
- msgid "Hostname"
--msgstr ""
-+msgstr "Nazwa hosta"
- 
- #: src/editldap.c:316 src/editldap_basedn.c:174
--#, fuzzy
- msgid "Port"
--msgstr "Drukuj"
-+msgstr "Port"
- 
- #: src/editldap.c:328
--#, fuzzy
- msgid " Check Server "
--msgstr "Serwer"
-+msgstr "Sprawd¼ serwer"
- 
- #: src/editldap.c:333 src/editldap_basedn.c:184
--#, fuzzy
- msgid "Search Base"
--msgstr "B³±d wyszukiwania"
-+msgstr "Baza wyszukiwania"
- 
- #: src/editldap.c:390
--#, fuzzy
- msgid "Search Criteria"
--msgstr "B³±d wyszukiwania"
-+msgstr "Kryteria wyszukiwania"
- 
- #: src/editldap.c:397
--#, fuzzy
- msgid " Reset "
--msgstr " Usuñ "
-+msgstr " Zeruj "
- 
- #: src/editldap.c:402
- msgid "Bind DN"
--msgstr ""
-+msgstr "Przy³±cz DN"
- 
- #: src/editldap.c:411
--#, fuzzy
- msgid "Bind Password"
--msgstr "Has³o"
-+msgstr "Has³o przy³±czania"
- 
- #: src/editldap.c:420
- msgid "Timeout (secs)"
--msgstr ""
-+msgstr "Opó¼nienie (sek)"
- 
- #: src/editldap.c:434
- msgid "Maximum Entries"
--msgstr ""
-+msgstr "Maksymalna liczba wpisów"
- 
- #: src/editldap.c:461 src/prefs_account.c:549
- msgid "Basic"
-@@ -1348,41 +1305,39 @@
- 
- #: src/editldap.c:462
- msgid "Extended"
--msgstr ""
-+msgstr "Rozszerzone"
- 
- #: src/editldap.c:546
--#, fuzzy
- msgid "Add New LDAP Server"
--msgstr "/Dod_aj serwer news"
-+msgstr "Dodaj nowy serwer LDAP"
- 
- #: src/editldap_basedn.c:144
- msgid "Edit LDAP - Select Search Base"
--msgstr ""
-+msgstr "Edycja LDAP - Wybierz bazê wyszukiwania"
- 
- #: src/editldap_basedn.c:205
- msgid "Available Search Base(s)"
--msgstr ""
-+msgstr "Dostêpne bazy wyszukiwania"
- 
- #: src/editldap_basedn.c:290
- msgid "Could not read Search Base(s) from server - please set manually"
--msgstr ""
-+msgstr "Nie mo¿na odczytaæ bazy wyszukiwania z serwera - ustaw rêcznie"
+ msgid "Edit address"
+-msgstr "Edytuj ksi±¿kê adresow±"
++msgstr "Edytuj adres"
+ 
+ #: src/editaddress.c:318
+ msgid "Add New Person"
+@@ -1342,22 +1341,18 @@
+ msgstr "Nie mo¿na odczytaæ baz wyszukiwania z serwera - ustaw rêcznie"
  
  #: src/editvcard.c:96
- msgid "File does not appear to be VCard format."
--msgstr ""
-+msgstr "Format pliku nie wygl±da na format VCard."
+-#, fuzzy
+ msgid "File does not appear to be vCard format."
+ msgstr "Plik nie wygl±da na bêd±cy w formacie VCard."
  
  #: src/editvcard.c:132
 -#, fuzzy
- msgid "Select VCard File"
--msgstr "Wybierz plik"
-+msgstr "Wybierz plik VCard"
+ msgid "Select vCard File"
+ msgstr "Wybierz plik VCard"
  
  #: src/editvcard.c:188 src/editvcard.c:291
- msgid "Edit VCard Entry"
--msgstr ""
-+msgstr "Edytuj wpis VCard"
+-#, fuzzy
+ msgid "Edit vCard Entry"
+ msgstr "Edytuj wpis VCard"
  
  #: src/editvcard.c:296
- msgid "Add New VCard Entry"
--msgstr ""
-+msgstr "Dodaj nowy wpis VCard"
+-#, fuzzy
+ msgid "Add New vCard Entry"
+ msgstr "Dodaj nowy wpis VCard"
  
- #: src/export.c:122
- msgid "Export"
-@@ -1427,7 +1382,7 @@
+@@ -1404,7 +1399,7 @@
  
  #: src/folderview.c:215 src/folderview.c:227
  msgid "/_Update folder tree"
@@ -679,668 +44,152 @@ diff -Nur sylpheed-0.6.2/po/pl.po sylpheed-0.6.2.old/po/pl.po
  
  #: src/folderview.c:216
  msgid "/Remove _mailbox"
-@@ -1619,7 +1574,6 @@
- msgstr "Usuñ konto news"
+@@ -2074,14 +2069,12 @@
+ msgstr "/_Plik/_Koniec"
  
- #: src/grouplistdialog.c:155
+ #: src/mainwindow.c:385
 -#, fuzzy
- msgid "Subscribe to newsgroup"
- msgstr "Subskrybuj grupê news"
+ msgid "/_Edit/_Find in current message"
+-msgstr "/_Edit/Za_wiñ bie¿±cy akapit"
++msgstr "/_Edycja/Zna_jd¼ w bie¿±cej wiadomo¶ci"
  
-@@ -1629,22 +1583,20 @@
+ #: src/mainwindow.c:386
+-#, fuzzy
+ msgid "/_Edit/_Search folder"
+-msgstr "/_Edycja/_Szukaj"
++msgstr "/_Edycja/_Przeszukaj katalog"
  
- #: src/grouplistdialog.c:206
- msgid "Refresh"
+ #: src/mainwindow.c:388 src/summaryview.c:368
+ msgid "/_View"
+@@ -2468,9 +2461,8 @@
+ msgstr "/Konfigura_cja/Ustawienia _filtrowania"
+ 
+ #: src/mainwindow.c:569
+-#, fuzzy
+ msgid "/_Configuration/_Preferences for current account..."
+-msgstr "/Konfigura_cja/_Preferencje konta..."
++msgstr "/Konfigura_cja/_Preferencje bie¿±cego konta..."
+ 
+ #: src/mainwindow.c:571
+ msgid "/_Configuration/---"
+@@ -2758,13 +2750,12 @@
+ msgstr "Eksportowanie wiadomo¶ci z %s do %s...\n"
+ 
+ #: src/message_search.c:88
+-#, fuzzy
+ msgid "Find in current message"
+-msgstr "Wysy³anie wiadomo¶ci"
++msgstr "Znajd¼ w bie¿±cej wiadomo¶ci"
+ 
+ #: src/message_search.c:109
+ msgid "Find text:"
 -msgstr ""
-+msgstr "Od¶wie¼"
++msgstr "Znajd¼ tekst:"
  
- #: src/grouplistdialog.c:233
+ #: src/message_search.c:124 src/summary_search.c:184
+ msgid "Case sensitive"
+@@ -2787,14 +2778,12 @@
+ msgstr "Nie znaleziono szukanego ci±gu."
+ 
+ #: src/message_search.c:194
 -#, fuzzy
- msgid "Can't retrieve newsgroup list."
--msgstr "nie mo¿na otworzyæ listy odbiorców."
-+msgstr "nie mo¿na oodebraæ listy grup news."
+ msgid "Beginning of message reached; continue from end?"
+-msgstr "Osi±gniêto pocz±tek listy; zacz±æ od koñca?"
++msgstr "Osi±gniêto pocz±tek wiadomo¶ci; zacz±æ od koñca?"
  
- #: src/grouplistdialog.c:249 src/summaryview.c:767
+ #: src/message_search.c:197
 -#, fuzzy
- msgid "Done."
--msgstr "Zrobiono"
-+msgstr "Zrobiono."
+ msgid "End of message reached; continue from beginning?"
+-msgstr "Osi±gniêto koniec listy; zacz±æ od pocz±tku?"
++msgstr "Osi±gniêto koniec wiadomo¶ci; zacz±æ od pocz±tku?"
  
- #: src/grouplistdialog.c:260
- #, c-format
- msgid "%d newsgroups received (%s read)"
--msgstr ""
-+msgstr "%d grup news odebrano (%s przeczytano)"
+ #: src/message_search.c:200 src/summary_search.c:307
+ msgid "Search finished"
+@@ -3104,9 +3093,8 @@
+ msgstr "Preferencje nowego konta"
  
- #: src/gtkutils.c:50 src/gtkutils.c:66
- msgid "Abcdef"
-@@ -1886,24 +1838,20 @@
- msgstr "Zrobiono"
- 
- #: src/inc.c:455
+ #: src/prefs_account.c:506
 -#, fuzzy
- msgid "Cancelled"
--msgstr "Anuluj"
-+msgstr "Anulowano"
+ msgid "Account preferences"
+-msgstr "Wspólne preferencje "
++msgstr "Preferencje konta"
  
- #: src/inc.c:460
+ #: src/prefs_account.c:529
+ msgid "Creating account preferences window...\n"
+@@ -3417,9 +3405,8 @@
+ msgstr "Automatycznie sprawdzaj pocztê"
+ 
+ #: src/prefs_common.c:812
 -#, fuzzy
- msgid "Connection failed"
+ msgid "every"
+-msgstr "Nigdy"
++msgstr "ka¿de"
+ 
+ #: src/prefs_common.c:824
+ msgid "minute(s)"
+@@ -4141,9 +4128,8 @@
+ msgstr "Naprawdê chcesz usun±æ tê regu³ê?"
+ 
+ #: src/procmime.c:701
+-#, fuzzy
+ msgid "procmime_get_text_content(): Code conversion failed.\n"
 -msgstr "B³±d konwersji kodu.\n"
-+msgstr "B³±d po³±czenia"
++msgstr "procmine_get_text_content(): B³±d konwersji kodu.\n"
  
- #: src/inc.c:463
+ #: src/procmsg.c:137 src/procmsg.c:153
+ msgid "Cache data is corrupted\n"
+@@ -4477,13 +4463,12 @@
+ msgstr "  Nadawca: %s\n"
+ 
+ #: src/summary_search.c:98
 -#, fuzzy
- msgid "Auth failed"
--msgstr "Do³±cz plik"
-+msgstr "B³±d autoryzacji"
+ msgid "Search folder"
+-msgstr "Wybierz katalog"
++msgstr "Przeszukaj katalog"
  
- #: src/inc.c:507
+ #: src/summary_search.c:172
+ msgid "Body:"
+-msgstr ""
++msgstr "Cia³o:"
+ 
+ #: src/summary_search.c:196
+ msgid "Select all matched"
+@@ -4570,19 +4555,16 @@
+ msgstr "/Dodaj nadawcê do _ksi±¿ki adresowej"
+ 
+ #: src/summaryview.c:369
 -#, fuzzy
- msgid "Some errors occured while getting mail."
--msgstr "wyst±pi³ b³±d podczas przy poleceniu LIST.\n"
-+msgstr "Wyst±pi³y b³êdy podczas pobierania poczty."
+ msgid "/_View/Open in new _window"
+-msgstr "/Ot_wórz w nowym oknie"
++msgstr "/W_Widok/Ot_wórz w nowym oknie"
  
- #: src/inc.c:549
- #, c-format
-@@ -1926,26 +1874,25 @@
- msgstr "Nie mo¿na po³±czyæ siê z serwerem POP3: %s:%d\n"
- 
- #: src/inc.c:767 src/inc.c:822
--#, fuzzy, c-format
-+#, c-format
- msgid "Retrieving message (%d / %d) (%s / %s)"
--msgstr "Pobieranie wiadomo¶ci (%d / %d) (%d / %d bajtów)"
-+msgstr "Pobieranie wiadomo¶ci (%d / %d) (%s / %s)"
- 
- #: src/inc.c:796
+ #: src/summaryview.c:371
 -#, fuzzy
- msgid "Authenticating..."
- msgstr "Autentykacja"
+ msgid "/_View/_Source"
+-msgstr "/_Widok/P_oka¿ ¼ród³o"
++msgstr "/_Widok/¬ród³_o"
  
- #: src/inc.c:801
- msgid "Getting the number of new messages (STAT)..."
--msgstr "Pobieranie liczby wiadomo¶ci (STAT)..."
-+msgstr "Pobieranie liczby nowych wiadomo¶ci (STAT)..."
- 
- #: src/inc.c:806
- msgid "Getting the number of new messages (LAST)..."
--msgstr "Pobieranie liczby wiadomo¶ci (LAST)..."
-+msgstr "Pobieranie liczby nowych wiadomo¶ci (LAST)..."
- 
- #: src/inc.c:811
- msgid "Getting the number of new messages (UIDL)..."
--msgstr "Pobieranie liczby wiadomo¶ci (UIDL)"
-+msgstr "Pobieranie liczby nowych wiadomo¶ci (UIDL)"
- 
- #: src/inc.c:816
- msgid "Getting the size of messages (LIST)..."
-@@ -2339,14 +2286,12 @@
- msgstr "/Wiado_mo¶æ/_Zaznacz/Zaznacz jako przecz_ytane"
- 
- #: src/mainwindow.c:501
+ #: src/summaryview.c:372
 -#, fuzzy
- msgid "/_Message/_Mark/Mark all _read"
--msgstr "/Wiado_mo¶æ/_Zaznacz/Zaznacz jako przecz_ytane"
-+msgstr "/Wiado_mo¶æ/_Zaznacz/Zaznacz wszystkie jako p_rzeczytane"
+ msgid "/_View/All _header"
+-msgstr "/_Widok/Poka¿ wszystkie na_g³ówki"
++msgstr "/_Widok/Wszystkie na_g³ówki"
  
- #: src/mainwindow.c:503
+ #: src/summaryview.c:375
+ msgid "/_Print..."
+@@ -4768,14 +4750,12 @@
+ msgstr "Wiadomo¶æ %s/%d ustawiona do skasowania\n"
+ 
+ #: src/summaryview.c:2246
 -#, fuzzy
- msgid "/_Message/Add sender to address boo_k"
--msgstr "/Dodaj nadawcê do _ksi±¿ki adresowej"
-+msgstr "/Wiado_mo¶æ/Dodaj nadawcê do _ksi±¿ki adresowej"
+ msgid "Delete message(s)"
+ msgstr "Usuñ wiadomo¶æ"
  
- #: src/mainwindow.c:506
- msgid "/_Message/Open in new _window"
-@@ -2377,57 +2322,46 @@
- msgstr "/Pod_sumowanie/---"
- 
- #: src/mainwindow.c:515
+ #: src/summaryview.c:2247
 -#, fuzzy
- msgid "/_Summary/Go _to"
--msgstr "/Pod_sumowanie/_Sortuj"
-+msgstr "/Pod_sumowanie/_Id¼ do"
- 
- #: src/mainwindow.c:516
--#, fuzzy
- msgid "/_Summary/Go _to/_Prev message"
--msgstr "/Pod_sumowanie/_Poprzednia wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/_Poprzednia wiadomo¶æ"
- 
- #: src/mainwindow.c:517
--#, fuzzy
- msgid "/_Summary/Go _to/_Next message"
--msgstr "/Pod_sumowanie/_Nastêpna wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/_Nastêpna wiadomo¶æ"
- 
- #: src/mainwindow.c:518 src/mainwindow.c:523 src/mainwindow.c:528
--#, fuzzy
- msgid "/_Summary/Go _to/---"
--msgstr "/Pod_sumowanie/_Sortuj/---"
-+msgstr "/Pod_sumowanie/_Id¼ do/---"
- 
- #: src/mainwindow.c:519
--#, fuzzy
- msgid "/_Summary/Go _to/P_rev unread message"
--msgstr "/Pod_sumowanie/Nastêpna ni_eprzeczytana wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/Pop_rzednia nieprzeczytana wiadomo¶æ"
- 
- #: src/mainwindow.c:521
--#, fuzzy
- msgid "/_Summary/Go _to/N_ext unread message"
--msgstr "/Pod_sumowanie/Nastêpna ni_eprzeczytana wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/Nastêpna ni_eprzeczytana wiadomo¶æ"
- 
- #: src/mainwindow.c:524
--#, fuzzy
- msgid "/_Summary/Go _to/Prev _marked message"
--msgstr "/Pod_sumowanie/_Poprzednia wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/Poprzednia zaznaczona wiado_mo¶æ"
- 
- #: src/mainwindow.c:526
--#, fuzzy
- msgid "/_Summary/Go _to/Next m_arked message"
--msgstr "/Pod_sumowanie/Nastêpna ni_eprzeczytana wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/N_astêpna zaznaczona wiadomo¶æ"
- 
- #: src/mainwindow.c:529
--#, fuzzy
- msgid "/_Summary/Go _to/Prev _labeled message"
--msgstr "/Pod_sumowanie/_Poprzednia wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/_Poprzednia zaetykietowana wiadomo¶æ"
- 
- #: src/mainwindow.c:531
--#, fuzzy
- msgid "/_Summary/Go _to/Next la_beled message"
--msgstr "/Pod_sumowanie/_Nastêpna wiadomo¶æ"
-+msgstr "/Pod_sumowanie/_Id¼ do/_Nastêpna zaetykietowana wiadomo¶æ"
- 
- #: src/mainwindow.c:533
--#, fuzzy
- msgid "/_Summary/_Go to other folder..."
- msgstr "/Pod_sumowanie/Id¼ do inne_go katalogu"
- 
-@@ -2456,24 +2390,20 @@
- msgstr "/Pod_sumowanie/Sortuj wg _tematu"
- 
- #: src/mainwindow.c:541
--#, fuzzy
- msgid "/_Summary/_Sort/Sort by _color label"
--msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _daty"
-+msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _koloru etykiety"
- 
- #: src/mainwindow.c:543
--#, fuzzy
- msgid "/_Summary/_Sort/Sort by _mark"
--msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _numeru"
-+msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _zaznaczenia"
- 
- #: src/mainwindow.c:544
--#, fuzzy
- msgid "/_Summary/_Sort/Sort by _unread"
--msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _numeru"
-+msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _nieprzeczytanych"
- 
- #: src/mainwindow.c:545
--#, fuzzy
- msgid "/_Summary/_Sort/Sort by a_ttachment"
--msgstr "/Pod_sumowanie/_Sortuj/Sortuj wg _daty"
-+msgstr "/Pod_sumowanie/_Sortuj/Sor_tuj wg za³±cznika"
- 
- #: src/mainwindow.c:547
- msgid "/_Summary/_Sort/---"
-@@ -2481,7 +2411,7 @@
- 
- #: src/mainwindow.c:548
- msgid "/_Summary/_Sort/_Attract by subject"
--msgstr "/Pod_sumowanie/_Sortuj/_Attract wg tematu"
-+msgstr "/Pod_sumowanie/_Sortuj/_Sortuj wg tematu"
- 
- #: src/mainwindow.c:550
- msgid "/_Summary/_Thread view"
-@@ -2619,7 +2549,7 @@
- 
- #: src/mainwindow.c:1490
- msgid "Incorporate new mail"
--msgstr ""
-+msgstr "Odbierz now± pocztê"
- 
- #: src/mainwindow.c:1495
- msgid "Get all"
-@@ -2627,7 +2557,7 @@
- 
- #: src/mainwindow.c:1496
- msgid "Incorporate new mail of all accounts"
--msgstr ""
-+msgstr "Odbierz now± pocztê ze wszystkich kont"
- 
- #: src/mainwindow.c:1507
- msgid "Send queued message(s)"
-@@ -3298,27 +3228,27 @@
- 
- #: src/prefs_account.c:1157
- msgid "Use SSL for POP3 connection"
--msgstr ""
-+msgstr "U¿yj SSL dla po³±czenia POP3"
- 
- #: src/prefs_account.c:1159
- msgid "Use SSL for IMAP4 connection"
--msgstr ""
-+msgstr "U¿yj SSL dla po³±czenia IMAP4"
- 
- #: src/prefs_account.c:1161
- msgid "Send (SMTP)"
--msgstr ""
-+msgstr "Wy¶lij (SMTP)"
- 
- #: src/prefs_account.c:1169
- msgid "Don't use SSL"
--msgstr ""
-+msgstr "Nie u¿ywaj SSL"
- 
- #: src/prefs_account.c:1178
- msgid "Use SSL for SMTP connection"
--msgstr ""
-+msgstr "U¿yj SSL dla po³±czeñ SMTP"
- 
- #: src/prefs_account.c:1187
- msgid "Use STARTTLS command to start SSL session"
--msgstr ""
-+msgstr "U¿yj polecenia STARTTLS by rozpocz±æ sesjê SSL"
- 
- #: src/prefs_account.c:1249
- msgid "Specify SMTP port"
-@@ -3390,7 +3320,7 @@
- 
- #: src/prefs_common.c:750
- msgid "Use external program for incorporation"
--msgstr ""
-+msgstr "U¿yj zewnêtrzengo programu do odbierania"
- 
- #: src/prefs_common.c:757 src/prefs_common.c:919
- msgid "Program path"
-@@ -3402,11 +3332,11 @@
- 
- #: src/prefs_common.c:782
- msgid "Incorporate from spool"
--msgstr ""
-+msgstr "Odbieraj ze spoola"
- 
- #: src/prefs_common.c:784
- msgid "Filter on incorporation"
--msgstr ""
-+msgstr "Filtr odbierania"
- 
- #: src/prefs_common.c:792
- msgid "Spool directory"
-@@ -3430,7 +3360,7 @@
- 
- #: src/prefs_common.c:835
- msgid "Update all local folders after incorporation"
--msgstr ""
-+msgstr "Od¶wie¿ wszystkie lokalne katalogi po odebraniu"
- 
- #: src/prefs_common.c:837
- msgid "News"
-@@ -3573,9 +3503,8 @@
- msgstr "Automatycznie wstaw podpis"
- 
- #: src/prefs_common.c:1127
--#, fuzzy
- msgid "Automatically launch the external editor"
--msgstr "Automatycznie sprawd¼ podpisy"
-+msgstr "Automatycznie uruchom zewnêtrzny edytor"
- 
- #: src/prefs_common.c:1129
- msgid "Automatically select account for replies"
-@@ -3599,7 +3528,7 @@
- 
- #: src/prefs_common.c:1208
- msgid "Font"
--msgstr "Font"
-+msgstr "Czcionka"
- 
- #: src/prefs_common.c:1217
- msgid "Text"
-@@ -3797,79 +3726,79 @@
- 
- #: src/prefs_common.c:1950
- msgid "the full abbreviated weekday name"
--msgstr ""
-+msgstr "skrócona nazwa dnia tygodnia"
- 
- #: src/prefs_common.c:1951
- msgid "the full weekday name"
--msgstr ""
-+msgstr "pe³na nazwa dnia tygodnia"
- 
- #: src/prefs_common.c:1952
- msgid "the abbreviated month name"
--msgstr ""
-+msgstr "skrócona nazwa miesi±ca"
- 
- #: src/prefs_common.c:1953
- msgid "the full month name"
--msgstr ""
-+msgstr "pe³na nazwa miesi±ca"
- 
- #: src/prefs_common.c:1954
- msgid "the preferred date and time for the current locale"
--msgstr ""
-+msgstr "preferowana data i czas dla bie¿acych ustawieñ lokalnych"
- 
- #: src/prefs_common.c:1955
- msgid "the century number (year/100)"
--msgstr ""
-+msgstr "wiek (rok/100)"
- 
- #: src/prefs_common.c:1956
- msgid "the day of the month as a decimal number"
--msgstr ""
-+msgstr "dzieñ miesi±ca jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1957
- msgid "the hour as a decimal number using a 24-hour clock"
--msgstr ""
-+msgstr "godzina jako liczba dziesiêtna, u¿ywaj±c czasu 24-godz."
- 
- #: src/prefs_common.c:1958
- msgid "the hour as a decimal number using a 12-hour clock"
--msgstr ""
-+msgstr "godzina jaki liczba dziesiêtna, u¿ywaj±c czasu 12-godz."
- 
- #: src/prefs_common.c:1959
- msgid "the day of the year as a decimal number"
--msgstr ""
-+msgstr "dzieñ roku jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1960
- msgid "the month as a decimal number"
--msgstr ""
-+msgstr "miesi±c jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1961
- msgid "the minute as a decimal number"
--msgstr ""
-+msgstr "minuta jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1962
- msgid "either AM or PM"
--msgstr ""
-+msgstr "jeden z AM lub PM"
- 
- #: src/prefs_common.c:1963
- msgid "the second as a decimal number"
--msgstr ""
-+msgstr "sekunda jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1964
- msgid "the day of the week as a decimal number"
--msgstr ""
-+msgstr "dzieñ tygodnia jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1965
- msgid "the preferred date for the current locale"
--msgstr ""
-+msgstr "preferowana data z bie¿±cych ustawieñ lokalnych"
- 
- #: src/prefs_common.c:1966
- msgid "the last two digits of a year"
--msgstr ""
-+msgstr "ostatnie dwie cyfry wieku"
- 
- #: src/prefs_common.c:1967
- msgid "the year as a decimal number"
--msgstr ""
-+msgstr "rok jako liczba dziesiêtna"
- 
- #: src/prefs_common.c:1968
- msgid "the time zone or name or abbreviation"
--msgstr ""
-+msgstr "strefa czasowa, nazwa lub skrót"
- 
- #: src/prefs_common.c:1995
- #, fuzzy
-@@ -3883,7 +3812,7 @@
- 
- #: src/prefs_common.c:2035
- msgid "Example"
--msgstr ""
-+msgstr "Przyk³ad"
- 
- #: src/prefs_common.c:2122
- msgid "Set message colors"
-@@ -3934,7 +3863,7 @@
- msgstr "Opis symboli"
- 
- #: src/prefs_common.c:2423
--#, fuzzy, c-format
-+#, c-format
- msgid ""
- "Date\n"
- "From\n"
-@@ -3954,6 +3883,7 @@
- "Inicja³ nadawcy\n"
- "Temat\n"
- "Do\n"
-+"Kopia\n"
- "Message-ID\n"
- "%"
- 
-@@ -4188,9 +4118,9 @@
- msgstr "Nie moge otworzyæ pliku zaznaczeñ dla zapisu.\n"
- 
- #: src/procmsg.c:662
--#, fuzzy, c-format
-+#, c-format
- msgid "Sending queued message %d failed.\n"
--msgstr "B³±d wysy³ania wiadomo¶ci z kolejki.\n"
-+msgstr "B³±d wysy³ania wiadomo¶ci %d z kolejki.\n"
- 
- #: src/procmsg.c:718
- #, c-format
-@@ -4294,7 +4224,7 @@
- 
- #: src/select-keys.c:303
- msgid "Val"
--msgstr ""
-+msgstr "Warto¶æ"
- 
- #: src/select-keys.c:325
- msgid "Select"
-@@ -4365,28 +4295,25 @@
- msgstr "Nie mogê po³±czyæ siê z serwerem SMTP: %s:%d\n"
- 
- #: src/send.c:527
--#, fuzzy
- msgid "SSL connection failed"
--msgstr "B³±d konwersji kodu.\n"
-+msgstr "B³±d po³±czenia SSL"
- 
- #: src/send.c:534
--#, fuzzy, c-format
-+#, c-format
- msgid "Error occurred while connecting to %s:%d\n"
--msgstr "B³±d podczas publikowania\n"
-+msgstr "B³±d podczas ³±czenia do %s:%d\n"
- 
- #: src/send.c:549
- msgid "Error occurred while sending HELO\n"
- msgstr "B³±d podczas wysy³ania HELO\n"
- 
- #: src/send.c:558
--#, fuzzy
- msgid "Error occurred while sending STARTTLS\n"
--msgstr "B³±d podczas wysy³ania HELO\n"
-+msgstr "B³±d podczas wysy³ania STARTTLS\n"
- 
- #: src/send.c:568
--#, fuzzy
- msgid "Error occurred while sending EHLO\n"
--msgstr "B³±d podczas wysy³ania HELO\n"
-+msgstr "B³±d podczas wysy³ania EHLO\n"
- 
- #: src/send.c:588
- msgid "Sending message"
-@@ -4428,56 +4355,56 @@
- 
- #: src/ssl.c:44
- msgid "SSLv23 not available\n"
--msgstr ""
-+msgstr "SSLv23 niedostêpne\n"
- 
- #: src/ssl.c:46
- msgid "SSLv23 available\n"
--msgstr ""
-+msgstr "SSLv23 dostêpne\n"
- 
- #: src/ssl.c:51
- msgid "TLSv1 not available\n"
--msgstr ""
-+msgstr "TLSv1 niedostêpny\n"
- 
- #: src/ssl.c:53
- msgid "TLSv1 available\n"
--msgstr ""
-+msgstr "TLSv1 dostêpny\n"
- 
- #: src/ssl.c:81 src/ssl.c:88
- msgid "SSL method not available\n"
--msgstr ""
-+msgstr "Niedostêpna metoda SSL\n"
- 
- #: src/ssl.c:94
- msgid "Unknown SSL method *PROGRAM BUG*\n"
--msgstr ""
-+msgstr "Nieznana metoda SSL *PRGRAM BUG*\n"
- 
- #: src/ssl.c:100
- msgid "Error creating ssl context\n"
--msgstr ""
-+msgstr "B³±d tworzenia kontekstu ssl\n"
- 
- #: src/ssl.c:106
--#, fuzzy, c-format
-+#, c-format
- msgid "SSL connect failed (%s)\n"
--msgstr "B³±d konwersji kodu.\n"
-+msgstr "B³±d po³±czenia SSL (%s)\n"
- 
- #. Get the cipher
- #: src/ssl.c:113
- #, c-format
- msgid "SSL connection using %s\n"
--msgstr ""
-+msgstr "Po³±czenie SSL z u¿yciem %s\n"
- 
- #: src/ssl.c:120
- msgid "Server certificate:\n"
--msgstr ""
-+msgstr "Certyfikat serwera:\n"
- 
- #: src/ssl.c:123
--#, fuzzy, c-format
-+#, c-format
- msgid "  Subject: %s\n"
--msgstr "Temat:"
-+msgstr "  Temat: %s\n"
- 
- #: src/ssl.c:128
- #, c-format
- msgid "  Issuer: %s\n"
--msgstr ""
-+msgstr "  Wydawca: %s\n"
- 
- #: src/summary_search.c:99 src/summary_search.c:190
- msgid "Search"
-@@ -4576,9 +4503,8 @@
- msgstr "/_Zaznacz/Zaznacz jako prz_eczytane"
- 
- #: src/summaryview.c:363
--#, fuzzy
- msgid "/_Mark/Mark all _read"
--msgstr "/_Zaznacz/Zaznacz jako prz_eczytane"
-+msgstr "/_Zaznacz/Zaznacz wszystkie jako prz_eczytane"
- 
- #: src/summaryview.c:364
- msgid "/Color la_bel"
-@@ -4669,49 +4595,36 @@
- "I¶æ do nastêpnego folderu?"
- 
- #: src/summaryview.c:973 src/summaryview.c:1003
--#, fuzzy
- msgid "No more marked messages"
--msgstr "Brak nieprzeczytanych wiadomo¶ci"
-+msgstr "Brak zaznaczonych wiadomo¶ci"
- 
- #: src/summaryview.c:974
--#, fuzzy
- msgid "No marked message found. Search from the end?"
--msgstr ""
--"Nie znaleziono nieprzeczytanych wiadomo¶ci.\n"
--"I¶æ do nastêpnego folderu?"
-+msgstr "Nie znaleziono zaznaczonych wiadomo¶ci. Szukaæ od koñca?"
- 
- #: src/summaryview.c:982 src/summaryview.c:1012
--#, fuzzy
- msgid "No marked messages."
--msgstr "Brak nieprzeczytanych wiadomo¶ci"
-+msgstr "Brak zaznaczonych wiadomo¶ci."
- 
- #: src/summaryview.c:1004
--#, fuzzy
- msgid "No marked message found. Search from the beginning?"
--msgstr ""
--"Nie znaleziono nieprzeczytanych wiadomo¶ci.\n"
--"I¶æ do nastêpnego folderu?"
-+msgstr "Nie znaleziono zaznaczonych wiadomo¶ci. Szukaæ od pocz±tku?"
- 
- #: src/summaryview.c:1033 src/summaryview.c:1063
--#, fuzzy
- msgid "No more labeled messages"
--msgstr "Brak nieprzeczytanych wiadomo¶ci"
-+msgstr "Brak zaetykietowanych wiadomo¶ci"
- 
- #: src/summaryview.c:1034
--#, fuzzy
- msgid "No labeled message found. Search from the end?"
--msgstr ""
--"Nie znaleziono nieprzeczytanych wiadomo¶ci.\n"
--"I¶æ do nastêpnego folderu?"
-+msgstr "Nie znaleziono zaetykietowanych wiadomo¶ci. Szukaæ od koñca?"
- 
- #: src/summaryview.c:1042 src/summaryview.c:1072
--#, fuzzy
- msgid "No labeled messages."
--msgstr "Brak nieprzeczytanych wiadomo¶ci"
-+msgstr "Brak zaetykietowanych wiadomo¶ci"
- 
- #: src/summaryview.c:1064
- msgid "No labeled message found. Search from the beginning?"
--msgstr ""
-+msgstr "Brak zaetykietowanych wiadomo¶ci. Szukaæ od pocz±tku?"
- 
- #: src/summaryview.c:1300 src/summaryview.c:1302
- msgid "Attracting messages by subject..."
-@@ -4878,9 +4791,8 @@
- msgstr "Tworzenie widoku tekstowego...\n"
- 
- #: src/textview.c:370
--#, fuzzy
- msgid "To save this part, pop up the context menu with "
--msgstr "By zapisaæ tê czê¶æ, rozwiñ menu kontekstowe \n"
-+msgstr "By zapisaæ tê czê¶æ, rozwiñ menu kontekstowe "
- 
- #: src/textview.c:371
- msgid "right click and select `Save as...', "
-@@ -4973,9 +4885,8 @@
- #~ msgid "Input the new name of group:"
- #~ msgstr "Podaj nazwê nowej grupy:"
- 
--#, fuzzy
- #~ msgid "The address <%s> has already been registered."
--#~ msgstr "Katalog '%s' ju¿ istnieje."
-+#~ msgstr "Adres <%s> zosta³ ju¿ zarejestrowany."
- 
- #~ msgid "Wrap long lines"
- #~ msgstr "Zawijaj linie"
+ msgid "Do you really want to delete message(s) from the trash?"
+-msgstr "Czy naprawdê chcesz usun±æ ten nag³ówek?"
++msgstr "Czy naprawdê chcesz usun±æ wiadomo¶ci z kosza?"
+ 
+ #: src/summaryview.c:2271 src/summaryview.c:2273
+ msgid "Deleting duplicated messages..."
