@@ -7,6 +7,7 @@
 # _without_ldap		- without ldap support
 # _without_faces	- without compfaces support
 # _with_gtk2		- with gtk+2 gui
+%define		gtk2_snap	20030906
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
@@ -20,8 +21,8 @@ Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Patch0:		%{name}-ac_fixes.patch
 Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
-# Patch3 comes from http://www.homa.ne.jp/~ashie/linux/sylpheed-gtk2.html
-Patch3:		%{name}-gtk2.patch.bz2
+# Patch3 comes from http://sourceforge.net/projects/sylpheed-gtk2/
+Patch3:		http://dl.sourceforge.net/sourceforge/sylpheed-gtk2/%{name}-%{version}-gtk2-%{gtk2_snap}.diff.gz
 BuildRequires:	autoconf
 BuildRequires:	automake
 %{!?_without_faces:BuildRequires:	faces-devel}
