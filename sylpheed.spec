@@ -5,6 +5,7 @@
 # _without_ssl		- without ssl support
 # _without_ipv6		- without ipv6 support
 # _without_ldap		- without ldap support
+# _without_faces	- without compfaces support
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
@@ -20,7 +21,7 @@ Patch1:		%{name}-desktop.patch
 Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	faces-devel
+%{!?_without_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
@@ -29,7 +30,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	libtool
 %{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
 %{!?_without_ldap:BuildRequires:        openldap-devel}
-Requires:	faces
+%{!?_without_faces:Requires:	faces}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -93,7 +94,8 @@ rm -f missing
 	%{!?_without_ssl: --enable-ssl} \
 	%{!?_without_ldap: --enable-ldap} \
 	%{!?_without_ipv6: --enable-ipv6} \
-	%{!?_without_gpg: --enable-gpgme}
+	%{!?_without_gpg: --enable-gpgme} \
+	%{?_without_faces: --disable-compfaces}
 
 %{__make}
 
