@@ -62,7 +62,7 @@ Szybki klient poczty o mo¿liwo¶ciach takich jak
 %build
 rm -f missing
 libtoolize --copy --force
-gettextize --copy --force 
+gettextize --copy --force
 aclocal -I ac
 autoconf
 autoheader
