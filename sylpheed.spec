@@ -2,7 +2,7 @@
 # maybe TODO: jpilot (libpisock)
 #
 # Conditional build:
-%bcond_without	gpg		# without gpg support [disabled by ac_fixes patch?]
+%bcond_without	gpg		# without gpg support
 %bcond_without	ssl		# without ssl support
 %bcond_without	ipv6		# without ipv6 support
 %bcond_without	ldap		# without ldap support
@@ -13,16 +13,15 @@ Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	0.9.99
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 # Source0-md5:	1ae39659d359c7cfb01b970a28a3a747
-Patch0:		%{name}-ac_fixes.patch
-Patch1:		%{name}-desktop.patch
-Patch2:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
-Patch3:		%{name}-nolibs.patch
-Patch4:		http://www.thewildbeast.co.uk/sylpheed/0.9.12/common-smtp-server.patch
+Patch0:		%{name}-desktop.patch
+Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
+Patch2:		%{name}-nolibs.patch
+Patch3:		http://www.thewildbeast.co.uk/sylpheed/0.9.12/common-smtp-server.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
@@ -54,14 +53,15 @@ go for it :-)) like:
 - SSL support
 
 %description -l pl
-Szybki klient poczty o mo¿liwo¶ciach takich jak
-- o przyjazny, intuicyjny interfejs u¿ytkownika
+Szybki klient poczty o mo¿liwo¶ciach takich jak:
+- przyjazny, intuicyjny interfejs u¿ytkownika
 - zintegrowany klient USENET
 - mo¿liwo¶æ pracy wy³±cznie przy u¿yciu klawiatury
 - klawiszologia typu Mew/Wanderlust
 - obs³uga wieloczê¶ciowych MIME
 - obs³uga dowolnej ilo¶ci kont pocztowych
-- funkcje sortowania o ksi±¿ka adresowa
+- funkcje sortowania
+- ksi±¿ka adresowa
 - wsparcie szyfrowania SSL
 
 %description -l pt_BR
@@ -80,10 +80,9 @@ recursos como:
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
-%patch2 -p0
-%patch3 -p1
-%patch4 -p0
+%patch1 -p0
+%patch2 -p1
+%patch3 -p0
 
 mv -f po/{sr,sr@Latn}.po
 mv -f po/{zh_TW.Big5,zh_TW}.po
@@ -94,6 +93,7 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 %{__libtoolize}
 %{__gettextize}
 %{__aclocal} -I ac
+%{__autoheader}
 %{__autoconf}
 %{__automake}
 %configure \
