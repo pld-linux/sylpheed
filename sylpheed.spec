@@ -26,6 +26,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gtkhtml-devel >= 0.10.1
 %{?_with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
+BuildRequires:	openssl-devel
 Requires:	faces
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -35,18 +36,27 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 This program is an X based fast e-mail client which has features (or
-go for it :-)) like: o user-friendly and intuitive interface o
-integrated NetNews client (partially implemented) o ability of
-keyboard-only operation o Mew/Wanderlust-like key bind o multipart
-MIME o unlimited multiple account handling o assortment function o
-address book
+go for it :-)) like:
+- user-friendly and intuitive interface
+- integrated NetNews client (partially implemented)
+- ability of keyboard-only operation 
+- Mew/Wanderlust-like key bind 
+- multipart MIME
+- unlimited multiple account handling
+- assortment function
+- address book
+- SSL support
 
 %description -l pl
-Szybki klient poczty o mo¿liwo¶ciach takich jak: o przyjazny,
-intuicyjny interfejs u¿ytkownika o zintegrowany klient USENET o
-mo¿liwo¶æ pracy wy³±cznie przy u¿yciu klawiatury o klawiszologia typu
-Mew/Wanderlust o obs³uga wieloczê¶ciowych MIME o obs³uga dowolnej
-ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
+Szybki klient poczty o mo¿liwo¶ciach takich jak
+- o przyjazny, intuicyjny interfejs u¿ytkownika 
+- zintegrowany klient USENET
+- mo¿liwo¶æ pracy wy³±cznie przy u¿yciu klawiatury
+- klawiszologia typu Mew/Wanderlust
+- obs³uga wieloczê¶ciowych MIME 
+- obs³uga dowolnej ilo¶ci kont pocztowych
+- funkcje sortowania o ksi±¿ka adresowa
+- wsparcie szyfrowania SSL
 
 %prep
 %setup -q
@@ -68,6 +78,7 @@ automake --add-missing --foreign --copy
 	--enable-impib \
 	--enable-gdk-pixbuf \
 	--enable-threads \
+	--enable-ssl \
 	--enable-ipv6
 
 %{__make}
