@@ -44,8 +44,8 @@
 +        AC_DEFINE($2)
 +    fi
 +  ])
---- sylpheed-0.8.8/configure.in.orig	Wed Dec 25 08:23:57 2002
-+++ sylpheed-0.8.8/configure.in	Mon Jan 13 21:23:11 2003
+--- sylpheed-0.8.9/configure.in~	Fri Jan 17 09:57:35 2003
++++ sylpheed-0.8.9/configure.in	Sat Feb  1 01:39:28 2003
 @@ -51,8 +51,6 @@
  AC_PROG_YACC
  AM_PROG_LIBTOOL
@@ -112,15 +112,6 @@
  if test "$ac_cv_enable_compface" = yes; then
 -	AC_CHECK_LIB(compface, uncompface,,[ac_cv_enable_compface=no])
 +	AC_CHECK_LIB(compface, uncompface,[],[ac_cv_enable_compface=no])
- fi
- 
- dnl Check for libjconv
-@@ -235,7 +202,7 @@
- 	[  --disable-jconv         Do not use libjconv],
- 	[ac_cv_enable_jconv=$enableval], [ac_cv_enable_jconv=yes])
- if test "$ac_cv_enable_jconv" = yes; then
--	AC_CHECK_LIB(jconv, jconv_alloc_conv,,[ac_cv_enable_jconv=no])
-+	AC_CHECK_LIB(jconv, jconv_alloc_conv,[],[ac_cv_enable_jconv=no])
  fi
  
  AC_CHECK_LIB(xpg4, setlocale)
