@@ -1,0 +1,12 @@
+diff -urN sylpheed-0.7.0claws.orig/Makefile.am sylpheed-0.7.0claws/Makefile.am
+--- sylpheed-0.7.0claws.orig/Makefile.am	Sun Dec  9 10:44:31 2001
++++ sylpheed-0.7.0claws/Makefile.am	Wed Jan 23 10:46:27 2002
+@@ -16,7 +16,7 @@
+ if SYLPHEED_GNOME
+ pixmapdir=$(gnomedir)/share/pixmaps
+ pixmap_DATA=sylpheed.png
+-gnomapdir=$(gnomedir)/share/gnome/apps/Internet
++gnomapdir=$(gnomedir)/share/applnk/Network/Mail
+ gnomap_DATA=sylpheed.desktop
+ else
+ pixmapdir=
