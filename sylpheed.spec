@@ -99,5 +99,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/*
 %dir %{_datadir}/%{name}
 %dir %{_datadir}/%{name}/manual
+%{_datadir}/%{name}/manual/en
 %lang(ja) %{_datadir}/%{name}/manual/ja
 %{_applnkdir}/Network/Mail/*
