@@ -2,7 +2,7 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
 Version:	0.4.66
-Release:	1
+Release:	2
 License:	GPL
 Group:		X11/Applications
 Group(de):	X11/Applikationen
@@ -10,6 +10,7 @@ Group(pl):	X11/Aplikacje
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
 Patch0: %{name}-forward-3.patch
+Patch1: %{name}-gtkhtml.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	libtool
@@ -17,6 +18,8 @@ BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	glib-devel
 BuildRequires:	gettext-devel
 BuildRequires:	imlib-devel
+Requires: gtkhtml
+BuildRequires: gtkhtml-devel
 URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -42,13 +45,24 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 
 %build
+CPPFLAGS="-I/usr/X11R6/include -I/usr/X11R6/include/gtk-1.2 -I/usr/include/glib-1.2 -I/usr/lib/glib/include/"
+LDFLAGS="-L/usr/X11R6/lib/"
+export CPPFLAGS LDFLAGS
+aclocal -I ac \
+  && autoconf \
+	  && autoheader \
+		  && automake --add-missing --foreign --copy \
+			  && ./configure $@
+				
 libtoolize --copy --force
 gettextize --copy --force 
 aclocal -I ac
 autoconf
-automake -a -c
+autoheader
+automake --add-missing --foreign --copy
 %configure \
 	--enable-threads \
 	--enable-ipv6
