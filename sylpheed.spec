@@ -2,26 +2,29 @@
 # Conditional build:
 %bcond_without jconv		# without jconv support
 %bcond_without gpg		# without gpg support
+%bcond_without gtkspell		# without gtkspell support
 %bcond_without ssl		# without ssl support
 %bcond_without ipv6		# without ipv6 support
 %bcond_without ldap		# without ldap support
 %bcond_without faces		# without compfaces support
 #
 %define		rname	sylpheed
-%define		snap	20031018
+%define		snap	20040302
 #
 Summary:	GTK+2 based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+2
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+2
 Name:		sylpheed-gtk2
-Version:	0.9.7
+Version:	0.9.9
 Release:	0.%{snap}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	%{name}-%{version}-%{snap}.tar.bz2
-# Source0-md5:	5efb2025a2ca92a05b1f19ffbc98a4fd
+# Source0-md5:	76ad9dcf892247f68e67ddc71dc0220c
 Patch0:		%{rname}-desktop.patch
 Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{rname}_save_all.patch
+Patch2:		%{name}-gtkspell.patch
+Patch3:		%{name}-scrollbarpolicy.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	gettext-devel
@@ -31,6 +34,7 @@ BuildRequires:	libtool
 # experimental sorting of bconds
 %{?with_faces:BuildRequires:	faces-devel}
 %{?with_gpg:BuildRequires:	gpgme-devel >= 0.3.10}
+%{?with_gtkspell:BuildRequires:	gtkspell-devel >= 2.0.5}
 %{?with_jconv:BuildRequires:	libjconv-devel}
 %{?with_ldap:BuildRequires:	openldap-devel}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7c}
@@ -82,9 +86,12 @@ recursos como:
 %prep
 %setup -qn %{name}-%{version}-%{snap}
 %patch0 -p1
-%patch1 -p0
+#%patch1 -p0
+%patch2 -p1
+%patch3 -p1
 
 %build
+cp /usr/share/automake/mkinstalldirs .
 glib-gettextize --copy --force
 %{__libtoolize}
 intltoolize --copy --force
@@ -98,6 +105,7 @@ intltoolize --copy --force
 	--enable-threads \
 	%{?with_faces:--disable-compfaces} \
 	%{?with_gpg:--enable-gpgme} \
+	%{?with_gtkspell:--enable-gtkspell} \
 	%{?with_ipv6:--enable-ipv6} \
 	%{?with_ldap:--enable-ldap} \
 	%{?with_ssl:--enable-ssl}
