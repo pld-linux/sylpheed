@@ -9,12 +9,10 @@ Group(de):	X11/Applikationen
 Group(pl):	X11/Aplikacje
 Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
 Source1:	%{name}.desktop
-#Patch0:		%{name}-forward-3.patch
-#Patch1:		%{name}-gtkhtml.patch
-#Patch2:		%{name}-addr-vcard-jpilot.patch
-#Patch3:		%{name}-empty_mailbox-2.patch
-#Patch4:		%{name}-open-url.patch
-#Patch5:		%{name}-fix-compose-cmdline.patch
+Patch0:		%{name}-gtkhtml.patch
+Patch1:		%{name}-empty_mailbox-2.patch
+Patch2:		%{name}-open-url.patch
+Patch3:		%{name}-fix-compose-cmdline.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	gettext-devel
@@ -48,12 +46,10 @@ ilo¶ci kont pocztowych o funkcje sortowania o ksi±¿ka adresowa
 
 %prep
 %setup -q
-#%patch0 -p1
-#%patch1 -p1
-#%patch2 -p1
-#%patch3 -p1
-#%patch4 -p1
-#%patch5 -p0
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p0
 
 %build
 rm missing
