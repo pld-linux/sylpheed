@@ -1,4 +1,3 @@
-
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
@@ -13,14 +12,14 @@ Source2:	%{name}.png
 Patch0:		%{name}-ac_fixes.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	imlib-devel
 BuildRequires:	faces-devel
 BuildRequires:	gettext-devel
 BuildRequires:	gdk-pixbuf-devel >= 0.8
 BuildRequires:	gtk+-devel >= 1.2.6
 BuildRequires:	gtkhtml-devel >= 0.10.1
 BuildRequires:	gpgme-devel
-Requires:	libjconv-devel
+BuildRequires:	imlib-devel
+BuildRequires:	libjconv-devel
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
 Requires:	faces
