@@ -23,14 +23,12 @@ Patch2:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
-BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_ldap:BuildRequires:	openldap-devel}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
-%{?with_faces:Requires:	faces}
 %{?with_jpilot:Requires:	pilot-link}
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
@@ -94,8 +92,6 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 %{__autoconf}
 %{__automake}
 %configure \
-	--enable-gdk-pixbuf \
-	--enable-threads \
 	%{!?with_faces:--disable-compface} \
 	%{?with_gpg:--enable-gpgme} \
 	%{!?with_ipv6:--disable-ipv6} \
