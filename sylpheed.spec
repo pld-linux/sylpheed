@@ -34,7 +34,7 @@ BuildRequires:	gtk+-devel >= 1.2.6
 %{?_with_gtk2:BuildRequires:	intltool}
 %{!?_without_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
-%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.7}
+%{!?_without_ssl:BuildRequires:	openssl-devel >= 0.9.6j}
 %{!?_without_ldap:BuildRequires:	openldap-devel}
 %{!?_without_faces:Requires:	faces}
 Requires:	mailcap
@@ -42,6 +42,9 @@ URL:		http://sylpheed.good-day.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 Conflicts:	gpgme-devel >= 4.0
 Obsoletes:	sylpheed-claws
+
+%define		_prefix		/usr/X11R6
+%define		_desktopdir	%{_applnkdir}/Network/Mail
 
 %description
 This program is an X based fast e-mail client which has features (or
