@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Sylpheed
 Comment=GTK+ based e-mail client
-Comment[pl]=Oparty na GTK+ klient poczty elektronicznej
+Comment[pl]=Oparty na GTK+ program pocztowy
 Exec=/usr/X11R6/bin/sylpheed
 Icon=sylpheed.xpm
 Terminal=0
