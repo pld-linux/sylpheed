@@ -1,0 +1,68 @@
+diff -Naur sylpheed/src/utils.c sylpheed-open-url/src/utils.c
+--- sylpheed/src/utils.c	Wed Jan 31 12:46:48 2001
++++ sylpheed-open-url/src/utils.c	Tue Feb  6 22:47:53 2001
+@@ -1269,23 +1269,62 @@
+ 	return ret;
+ }
+ 
++gint is_unchanged_uri_char(char c)
++{
++  switch (c)
++    {
++    case '(':
++    case ')':
++    case ',':
++      return 0;
++    default:
++      return 1;
++    }
++}
++
+ gint open_uri(const gchar *uri, const gchar *cmdline)
+ {
+ 	static gchar *default_cmdline = "netscape -remote openURL(%s,raise)";
+ 	gchar buf[BUFFSIZE];
+ 	gchar *p;
++	gchar encoded_uri[BUFFSIZE];
++	int i;
++	int k;
++
++	k = 0;
++	for(i = 0; i < strlen(uri) ; i++)
++	  {
++	    if (is_unchanged_uri_char(uri[i]))
++	      {
++		if (k + 2 >= BUFFSIZE)
++		  break;
++		encoded_uri[k++] = uri[i];
++	      }
++	    else
++	      {
++		char * hexa = "0123456789ABCDEF";
++
++		if (k + 4 >= BUFFSIZE)
++		  break;
++		encoded_uri[k++] = '%';
++		encoded_uri[k++] = hexa[uri[i] / 16];
++		encoded_uri[k++] = hexa[uri[i] % 16];
++	      }
++	  }
++
++	encoded_uri[k] = 0;
+ 
+ 	g_return_val_if_fail(uri != NULL, -1);
+ 
+ 	if (cmdline &&
+ 	    (p = strchr(cmdline, '%')) && *(p + 1) == 's' &&
+ 	    !strchr(p + 2, '%'))
+-		g_snprintf(buf, sizeof(buf), cmdline, uri);
++		g_snprintf(buf, sizeof(buf), cmdline, encoded_uri);
+ 	else {
+ 		if (cmdline)
+ 			g_warning(_("Open URI command line is invalid: `%s'"),
+ 				  cmdline);
+-		g_snprintf(buf, sizeof(buf), default_cmdline, uri);
++		g_snprintf(buf, sizeof(buf), default_cmdline, encoded_uri);
+ 	}
+ 
+ 	execute_command_line(buf);
