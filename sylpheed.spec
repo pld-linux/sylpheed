@@ -1,18 +1,16 @@
 # Conditional build:
 # _with_jconv		- adds much more codesets to choice from
-
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Name:		sylpheed
-Version:	0.7.0
+Version:	0.7.0claws
 Release:	1
 License:	GPL
 Group:		X11/Applications/Networking
 Group(de):	X11/Applikationen/Netzwerkwesen
 Group(pl):	X11/Aplikacje/Sieciowe
-Source0:	http://sylpheed.good-day.net/sylpheed/%{name}-%{version}.tar.bz2
-Source1:	%{name}.desktop
-Patch0:		%{name}-tmpdir.patch
+Source0:	http://prdownloads.sourceforge.net/%{name}-claws/%{name}-%{version}.tar.gz
+Patch0:		%{name}-claws-applnk-path.patch
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	imlib-devel
@@ -24,8 +22,10 @@ BuildRequires:	gtkhtml-devel >= 0.10.1
 %{?_with_jconv:BuildRequires:	libjconv-devel}
 BuildRequires:	libtool
 BuildRequires:	openssl-devel
+BuildRequires:	openldap-devel
+BuildRequires:	pspell-devel
 Requires:	faces
-URL:		http://sylpheed.good-day.net/
+URL:		http://sylpheed-claws.sourceforge.net/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_prefix		/usr/X11R6
@@ -57,7 +57,7 @@ Szybki klient poczty o mo¿liwo¶ciach takich jak
 
 %prep
 %setup -q
-%patch -p1
+%patch0 -p1
 
 %build
 rm -f missing
@@ -69,22 +69,22 @@ autoheader
 automake --add-missing --foreign --copy
 %configure \
 	%{!?_with_jconv:--disable-jconv} \
-	--enable-impib \
 	--enable-gdk-pixbuf \
+	--disable-imlib \
 	--enable-threads \
 	--enable-ssl \
+	--enable-ldap \
+	--enable-pspell \
+	--enable-compface \
 	--enable-ipv6
 
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d  $RPM_BUILD_ROOT%{_applnkdir}/Network/Mail
 
 %{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT \
-
-install %{SOURCE1} $RPM_BUILD_ROOT%{_applnkdir}/Network/Mail
+	DESTDIR=$RPM_BUILD_ROOT 
 
 gzip -9nf AUTHORS ChangeLog NEWS README TODO
 
@@ -100,4 +100,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/%{name}
 %dir %{_datadir}/%{name}/manual
 %lang(ja) %{_datadir}/%{name}/manual/ja
+%lang(en) %{_datadir}/%{name}/manual/en
 %{_applnkdir}/Network/Mail/*
+%{_datadir}/pixmaps/*
