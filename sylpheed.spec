@@ -5,7 +5,7 @@
 %bcond_without	ipv6		# without IPv6 support
 %bcond_without	ldap		# without LDAP support
 %bcond_without	faces		# without compfaces support
-%bcond_without	jpilot		# without jpilot support
+%bcond_without	jpilot		# without JPilot support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
