@@ -3,7 +3,7 @@ Name=Sylpheed
 Comment=GTK+ based e-mail client
 Comment[pl]=Oparty na GTK+ program pocztowy
 Exec=/usr/X11R6/bin/sylpheed
-Icon=sylpheed.xpm
+Icon=sylpheed.png
 Terminal=0
 Type=Application
 
