@@ -18,8 +18,7 @@ Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/v1.9/%{name}-%{version}.tar.bz2
 # Source0-md5:	ef5ddd410cf19007a502f44274bee04c
 Patch0:		%{name}-desktop.patch
-Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
-Patch2:		%{name}-nolibs.patch
+Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
@@ -77,8 +76,7 @@ recursos como:
 %prep
 %setup -q
 %patch0 -p1
-#%patch1 -p0
-%patch2 -p1
+%patch1 -p1
 
 mv -f po/{sr,sr@Latn}.po
 mv -f po/{zh_TW.Big5,zh_TW}.po
