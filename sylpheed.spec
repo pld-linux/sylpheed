@@ -22,6 +22,7 @@ Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
+BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
