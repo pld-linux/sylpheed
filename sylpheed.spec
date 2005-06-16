@@ -11,29 +11,27 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	1.0.4
-Release:	1
+Version:	2.0.0
+%define		_rel	beta2
+Release:	0.%{_rel}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.good-day.net/sylpheed/v1.0/%{name}-%{version}.tar.bz2
-# Source0-md5:	e47b275c281335d09201503af2115eaa
+Source0:	http://sylpheed.good-day.net/sylpheed/v2.0beta/%{name}-%{version}%{_rel}.tar.bz2
+# Source0-md5:	47b1b65a80baaa6a2ea7b22533fe75a7
 Patch0:		%{name}-desktop.patch
-Patch1:		http://www.thewildbeast.co.uk/sylpheed/0.8.0/%{name}_save_all.patch
-Patch2:		%{name}-nolibs.patch
+Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_faces:BuildRequires:	faces-devel}
 BuildRequires:	gettext-devel
-BuildRequires:	gdk-pixbuf-devel >= 0.8
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
-BuildRequires:	gtk+-devel >= 1.2.6
-BuildRequires:	imlib-devel
+BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_ldap:BuildRequires:	openldap-devel}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
-%{?with_faces:Requires:	faces}
 %{?with_jpilot:Requires:	pilot-link}
+BuildRequires:	pkgconfig
 Requires:	mailcap
 URL:		http://sylpheed.good-day.net/
 Obsoletes:	sylpheed-claws
@@ -79,10 +77,9 @@ recursos como:
 - catálogo de enderecos XML-based
 
 %prep
-%setup -q
+%setup -qn %{name}-%{version}%{_rel}
 %patch0 -p1
-%patch1 -p0
-%patch2 -p1
+%patch1 -p1
 
 mv -f po/{sr,sr@Latn}.po
 mv -f po/{zh_TW.Big5,zh_TW}.po
@@ -91,14 +88,11 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 
 %build
 %{__libtoolize}
-%{__gettextize}
 %{__aclocal} -I ac
 %{__autoheader}
 %{__autoconf}
 %{__automake}
 %configure \
-	--enable-gdk-pixbuf \
-	--enable-threads \
 	%{!?with_faces:--disable-compface} \
 	%{?with_gpg:--enable-gpgme} \
 	%{!?with_ipv6:--disable-ipv6} \
