@@ -1,18 +1,16 @@
---- sylpheed-0.9.6/sylpheed.desktop~	Fri Dec 26 13:53:57 2003
-+++ sylpheed-0.9.6/sylpheed.desktop	Fri Dec 26 13:53:57 2003
-@@ -2,9 +2,12 @@
- Name=Sylpheed
+diff -aurN sylpheed-1.9.10.orig/sylpheed.desktop sylpheed-1.9.10/sylpheed.desktop
+--- sylpheed-1.9.10.orig/sylpheed.desktop	2005-04-22 07:07:06.000000000 +0200
++++ sylpheed-1.9.10/sylpheed.desktop	2005-05-13 15:58:54.000000000 +0200
+@@ -4,9 +4,10 @@
  Name[ja]=Sylpheed
  Comment=E-Mail client
--Comment[ja]=�Żҥ᡼�륯�饤�����
-+Comment[ja]=電子メールクライアント
+ Comment[fr]=Client de messagerie électronique
 +Comment[pl]=Klient poczty elektronicznej
+ Comment[ja]=電子メールクライアント
  Exec=sylpheed
- Icon=sylpheed.png
--Terminal=0
-+Terminal=false
+-Icon=sylpheed.png
++Icon=sylpheed
+ Terminal=false
  Type=Application
 -Categories=Application;Network;
 +Categories=GTK;Network;Email;
-+Encoding=UTF-8
-+# vi: encoding=utf-8
