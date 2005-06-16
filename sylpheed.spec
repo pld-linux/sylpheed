@@ -1,11 +1,11 @@
 #
 # Conditional build:
-%bcond_without	gpg		# without GnuPG support
-%bcond_without	ssl		# without SSL support
-%bcond_without	ipv6		# without IPv6 support
-%bcond_without	ldap		# without LDAP support
 %bcond_without	faces		# without compfaces support
+%bcond_without	gpg		# without GnuPG support
+%bcond_without	ipv6		# without IPv6 support
 %bcond_without	jpilot		# without JPilot support
+%bcond_without	ldap		# without LDAP support
+%bcond_without	ssl		# without SSL support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
@@ -27,8 +27,8 @@ BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
-%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_ldap:BuildRequires:	openldap-devel}
+%{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
 %{?with_jpilot:Requires:	pilot-link}
 BuildRequires:	pkgconfig
