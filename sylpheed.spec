@@ -2,6 +2,7 @@
 # Conditional build:
 %bcond_without	faces		# without compfaces support
 %bcond_without	gpg		# without GnuPG support
+%bcond_without	gtkspell	# without gtkspell support
 %bcond_without	ipv6		# without IPv6 support
 %bcond_without	jpilot		# without JPilot support
 %bcond_without	ldap		# without LDAP support
@@ -11,12 +12,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.1.6
+Version:	2.1.7
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/v2.1/%{name}-%{version}.tar.bz2
-# Source0-md5:	13f07647f8e12a72209fe1c6a26e6691
+# Source0-md5:	3ba7be368659d4f22263759b2c3cb055
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
@@ -25,6 +26,7 @@ BuildRequires:	automake
 BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
+%{?with_gtkspell:BuildRequires:	gtkspell-devel}
 BuildRequires:	libtool
 %{?with_ldap:BuildRequires:	openldap-devel}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
@@ -91,12 +93,13 @@ mv -f po/{sr,sr@Latn}.po
 %{__autoconf}
 %{__automake}
 %configure \
-	%{!?with_faces:--disable-compface} \
-	%{?with_gpg:--enable-gpgme} \
-	%{!?with_ipv6:--disable-ipv6} \
-	%{?with_jpilot:--enable-jpilot} \
-	%{?with_ldap:--enable-ldap} \
-	%{?with_ssl:--enable-ssl}
+	--%{?with_faces:en}%{!?with_faces:dis}able-compface \
+	--%{?with_gpg:en}%{!?with_gpg:dis}able-gpgme \
+	--%{?with_gtkspell:en}%{!?with_gtkspell}able-gtkspell \
+	--%{?with_ipv6:en}%{!?with_ipv6:dis}able-ipv6 \
+	--%{?with_jpilot:en}%{!?with_jpilot:dis}able-jpilot \
+	--%{?with_ldap:en}%{!?with_ldap:dis}able-ldap \
+	--%{?with_ssl:en}%{!?with_ssl:dis}able-ssl
 %{__make}
 
 %install
