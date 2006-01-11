@@ -8,7 +8,7 @@
 %bcond_without	ldap		# without LDAP support
 %bcond_without	ssl		# without SSL support
 #
-%define		_rc	beta2
+%define		_rc	beta3
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
@@ -18,7 +18,7 @@ Release:	0.%{_rc}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/v2.2beta/%{name}-%{version}%{_rc}.tar.bz2
-# Source0-md5:	887baf6abd11acf002d9551d4af116ba
+# Source0-md5:	04071042177e92c0429e43027e745ff8
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
