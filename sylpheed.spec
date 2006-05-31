@@ -1,34 +1,35 @@
 #
 # Conditional build:
+%bcond_without	compface	# without compface support
 %bcond_without	gpg		# without GnuPG support
-%bcond_without	ssl		# without SSL support
+%bcond_without	gtkspell	# without gtkspell support
 %bcond_without	ipv6		# without IPv6 support
-%bcond_without	ldap		# without LDAP support
-%bcond_without	faces		# without compfaces support
 %bcond_without	jpilot		# without JPilot support
+%bcond_without	ldap		# without LDAP support
+%bcond_without	ssl		# without SSL support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.0.0
-%define		_rel	beta2
-Release:	0.%{_rel}.1
+Version:	2.2.5
+Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.good-day.net/sylpheed/v2.0beta/%{name}-%{version}%{_rel}.tar.bz2
-# Source0-md5:	47b1b65a80baaa6a2ea7b22533fe75a7
+Source0:	http://sylpheed.good-day.net/sylpheed/v2.2/%{name}-%{version}.tar.bz2
+# Source0-md5:	6e20522180ba0346d3f85de160076560
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
-%{?with_faces:BuildRequires:	faces-devel}
+%{?with_compface:BuildRequires:	compface-devel}
 BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
+%{?with_gtkspell:BuildRequires:	gtkspell-devel}
 BuildRequires:	libtool
+%{?with_ldap:BuildRequires:	openldap-devel >= 2.3.0}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
-%{?with_ldap:BuildRequires:	openldap-devel}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
 %{?with_jpilot:Requires:	pilot-link}
 BuildRequires:	pkgconfig
@@ -77,14 +78,13 @@ recursos como:
 - catálogo de enderecos XML-based
 
 %prep
-%setup -qn %{name}-%{version}%{_rel}
+%setup -q
 %patch0 -p1
 %patch1 -p1
 
 mv -f po/{sr,sr@Latn}.po
-mv -f po/{zh_TW.Big5,zh_TW}.po
 
-%{__perl} -pi -e 's/ sr / sr\@Latn /;s/zh_TW\.Big5/zh_TW/' configure.in
+%{__perl} -pi -e 's/ sr / sr\@Latn /' configure.in
 
 %build
 %{__libtoolize}
@@ -93,13 +93,13 @@ mv -f po/{zh_TW.Big5,zh_TW}.po
 %{__autoconf}
 %{__automake}
 %configure \
-	%{!?with_faces:--disable-compface} \
-	%{?with_gpg:--enable-gpgme} \
-	%{!?with_ipv6:--disable-ipv6} \
-	%{?with_jpilot:--enable-jpilot} \
-	%{?with_ldap:--enable-ldap} \
-	%{?with_ssl:--enable-ssl}
-
+	--%{?with_compface:en}%{!?with_compface:dis}able-compface \
+	--%{?with_gpg:en}%{!?with_gpg:dis}able-gpgme \
+	--%{?with_gtkspell:en}%{!?with_gtkspell}able-gtkspell \
+	--%{?with_ipv6:en}%{!?with_ipv6:dis}able-ipv6 \
+	--%{?with_jpilot:en}%{!?with_jpilot:dis}able-jpilot \
+	--%{?with_ldap:en}%{!?with_ldap:dis}able-ldap \
+	--%{?with_ssl:en}%{!?with_ssl:dis}able-ssl
 %{__make}
 
 %install
