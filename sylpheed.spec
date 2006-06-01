@@ -12,12 +12,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
 Summary(pt_BR):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.2.4
+Version:	2.2.5
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.good-day.net/sylpheed/v2.2/%{name}-%{version}.tar.bz2
-# Source0-md5:	4e5608e63d4ea413bf4a0fa3abb4223f
+# Source0-md5:	6e20522180ba0346d3f85de160076560
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-nolibs.patch
 BuildRequires:	autoconf >= 2.50
