@@ -16,11 +16,11 @@ Version:	2.2.9
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.good-day.net/sylpheed/v2.2/%{name}-%{version}.tar.bz2
+Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.2/%{name}-%{version}.tar.bz2
 # Source0-md5:	45e9e89775613b0afb732fbc11c73d26
 Patch0:		%{name}-desktop.patch
 Patch1:		%{name}-nolibs.patch
-URL:		http://sylpheed.good-day.net/
+URL:		http://sylpheed.sraoss.jp/
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_compface:BuildRequires:	compface-devel}
