@@ -10,8 +10,8 @@
 #
 %define	_pre	beta3
 Summary:	GTK+ based fast e-mail client
-Summary(pl):	Szybki klient poczty bazuj±cy na GTK+
-Summary(pt_BR):	Um r·pido e leve cliente de email baseado em GTK+
+Summary(pl.UTF-8):   Szybki klient poczty bazujƒÖcy na GTK+
+Summary(pt_BR.UTF-8):   Um r√°pido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	2.4.0
 Release:	0.%{_pre}.1
@@ -53,30 +53,30 @@ go for it :-)) like:
 - address book
 - SSL support
 
-%description -l pl
-Szybki klient poczty o moøliwo∂ciach takich jak:
-- przyjazny, intuicyjny interfejs uøytkownika
+%description -l pl.UTF-8
+Szybki klient poczty o mo≈ºliwo≈õciach takich jak:
+- przyjazny, intuicyjny interfejs u≈ºytkownika
 - zintegrowany klient USENET
-- moøliwo∂Ê pracy wy≥±cznie przy uøyciu klawiatury
+- mo≈ºliwo≈õƒá pracy wy≈ÇƒÖcznie przy u≈ºyciu klawiatury
 - klawiszologia typu Mew/Wanderlust
-- obs≥uga wieloczÍ∂ciowych MIME
-- obs≥uga dowolnej ilo∂ci kont pocztowych
+- obs≈Çuga wieloczƒô≈õciowych MIME
+- obs≈Çuga dowolnej ilo≈õci kont pocztowych
 - funkcje sortowania
-- ksi±øka adresowa
+- ksiƒÖ≈ºka adresowa
 - wsparcie szyfrowania SSL
 
-%description -l pt_BR
-Este programa È um r·pido cliente de email modo gr·fico o qual possui
+%description -l pt_BR.UTF-8
+Este programa √© um r√°pido cliente de email modo gr√°fico o qual possui
 recursos como:
-- interface gr·fica intuitiva e amig·vel
-- cliente integrado de notÌcias (parcialmente implementado)
-- habilitado para operac„o a partir do teclado
+- interface gr√°fica intuitiva e amig√°vel
+- cliente integrado de not√≠cias (parcialmente implementado)
+- habilitado para operac√£o a partir do teclado
 - Mew/Wanderlust-like key bind
 - multipart MIME
-- controle de m˙ltiplas contas de email (sem limite)
+- controle de m√∫ltiplas contas de email (sem limite)
 - armazenamento de mensagens
-- func„o de ordenac„o/classificac„o de mensagens
-- cat·logo de enderecos XML-based
+- func√£o de ordenac√£o/classificac√£o de mensagens
+- cat√°logo de enderecos XML-based
 
 %prep
 %setup -q -n %{name}-%{version}%{_pre}
