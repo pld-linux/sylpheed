@@ -9,8 +9,8 @@
 %bcond_without	ssl		# without SSL support
 #
 Summary:	GTK+ based fast e-mail client
-Summary(pl.UTF-8):   Szybki klient poczty bazujący na GTK+
-Summary(pt_BR.UTF-8):   Um rápido e leve cliente de email baseado em GTK+
+Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
+Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	2.3.1
 Release:	1
