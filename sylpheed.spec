@@ -13,7 +13,7 @@ Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
 Version:	2.4.2
-Release:	1
+Release:	2
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.4/%{name}-%{version}.tar.bz2
@@ -35,7 +35,6 @@ BuildRequires:	libtool
 %{?with_jpilot:Requires:	pilot-link}
 BuildRequires:	pkgconfig
 Requires:	mailcap
-Obsoletes:	sylpheed-claws
 Obsoletes:	sylpheed-gtk2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
