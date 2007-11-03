@@ -29,7 +29,7 @@ BuildRequires:	gettext-devel
 BuildRequires:	gtk+2-devel >= 2:2.4.0
 %{?with_gtkspell:BuildRequires:	gtkspell-devel}
 BuildRequires:	libtool
-%{?with_ldap:BuildRequires:	openldap-devel >= 2.3.0}
+%{?with_ldap:BuildRequires:	openldap-devel >= 2.4.6}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8b}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
 %{?with_jpilot:Requires:	pilot-link}
