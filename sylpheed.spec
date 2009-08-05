@@ -1,4 +1,6 @@
 #
+# TODO: set proper directory for plugins
+#
 # Conditional build:
 %bcond_without	compface	# without compface support
 %bcond_without	gpg		# without GnuPG support
@@ -7,17 +9,18 @@
 %bcond_without	jpilot		# without JPilot support
 %bcond_without	ldap		# without LDAP support
 %bcond_without	ssl		# without SSL support
+%bcond_with	oniguruma	# with oniguruma support
 #
 Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.6.0
+Version:	2.7.0
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.6/%{name}-%{version}.tar.bz2
-# Source0-md5:	5b7ed03b106e2a0d300b103652dd34c2
+Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.7/%{name}-%{version}.tar.bz2
+# Source0-md5:	977a8fc56dafc2af948e082f3ac28d9e
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -31,9 +34,9 @@ BuildRequires:	libtool
 %{?with_ldap:BuildRequires:	openldap-devel >= 2.4.6}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8b}
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
-%{?with_jpilot:Requires:	pilot-link}
 BuildRequires:	pkgconfig
 Requires:	mailcap
+%{?with_jpilot:Requires:	pilot-link}
 Obsoletes:	sylpheed-gtk2
 # sr@Latn vs. sr@latin
 Conflicts:	glibc-misc < 6:2.7
@@ -65,8 +68,8 @@ Szybki klient poczty o możliwościach takich jak:
 - wsparcie szyfrowania SSL
 
 %description -l pt_BR.UTF-8
-Este programa é um rápido cliente de email modo gráfico o qual possui
-recursos como:
+Este programa é um rápido cliente de email modo gráfico o qual
+possui recursos como:
 - interface gráfica intuitiva e amigável
 - cliente integrado de notícias (parcialmente implementado)
 - habilitado para operacão a partir do teclado
@@ -98,6 +101,7 @@ mv -f po/{sr,sr@latin}.po
 	--%{?with_ipv6:en}%{!?with_ipv6:dis}able-ipv6 \
 	--%{?with_jpilot:en}%{!?with_jpilot:dis}able-jpilot \
 	--%{?with_ldap:en}%{!?with_ldap:dis}able-ldap \
+	--%{?with_oniguruma:en}%{!?with_oniguruma:dis}able-oniguruma \
 	--%{?with_ssl:en}%{!?with_ssl:dis}able-ssl
 %{__make}
 
@@ -131,4 +135,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(fr) %{_datadir}/%{name}/faq/fr
 %lang(it) %{_datadir}/%{name}/faq/it
 %{_desktopdir}/sylpheed.desktop
+%attr(755,root,root) %{_libdir}/libsylph-0.so.0
+%attr(755,root,root) %{_libdir}/libsylph-0.so.*.*.*
+%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.0
+%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.*.*.*
 %{_pixmapsdir}/sylpheed.png
