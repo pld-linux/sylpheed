@@ -1,6 +1,4 @@
 #
-# TODO: set proper directory for plugins
-#
 # Conditional build:
 %bcond_without	compface	# without compface support
 %bcond_without	gpg		# without GnuPG support
@@ -15,12 +13,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.7.0
+Version:	2.7.1
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.7/%{name}-%{version}.tar.bz2
-# Source0-md5:	977a8fc56dafc2af948e082f3ac28d9e
+# Source0-md5:	1f470525c1fbe53253813a0978c18228
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
