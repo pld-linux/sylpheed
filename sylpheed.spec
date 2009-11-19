@@ -9,7 +9,7 @@
 %bcond_without	ssl		# without SSL support
 %bcond_with	oniguruma	# with oniguruma support
 #
-%define 	_beta	beta1
+%define 	_beta	beta2
 Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
@@ -19,7 +19,7 @@ Release:	0.%{_beta}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0beta/%{name}-%{version}%{_beta}.tar.bz2
-# Source0-md5:	11e3f1943b4502be6440f4874dffad79
+# Source0-md5:	f50279dce3044a0155fda7550837c08d
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -134,8 +134,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(fr) %{_datadir}/%{name}/faq/fr
 %lang(it) %{_datadir}/%{name}/faq/it
 %{_desktopdir}/sylpheed.desktop
-%attr(755,root,root) %{_libdir}/libsylph-0.so.0
+%attr(755,root,root) %{_libdir}/libsylph-0.so.1
 %attr(755,root,root) %{_libdir}/libsylph-0.so.*.*.*
-%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.0
+%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.1
 %attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.*.*.*
 %{_pixmapsdir}/sylpheed.png
