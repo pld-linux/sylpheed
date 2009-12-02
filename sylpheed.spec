@@ -9,7 +9,7 @@
 %bcond_without	ssl		# without SSL support
 %bcond_with	oniguruma	# with oniguruma support
 #
-%define 	_beta	beta2
+%define 	_beta	beta3
 Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
@@ -19,7 +19,7 @@ Release:	0.%{_beta}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0beta/%{name}-%{version}%{_beta}.tar.bz2
-# Source0-md5:	f50279dce3044a0155fda7550837c08d
+# Source0-md5:	4614e5dab79c9ba2a248fdcc8ca46dc9
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -67,8 +67,8 @@ Szybki klient poczty o możliwościach takich jak:
 - wsparcie szyfrowania SSL
 
 %description -l pt_BR.UTF-8
-Este programa é um rápido cliente de email modo gráfico o qual
-possui recursos como:
+Este programa é um rápido cliente de email modo gráfico o qual possui
+recursos como:
 - interface gráfica intuitiva e amigável
 - cliente integrado de notícias (parcialmente implementado)
 - habilitado para operacão a partir do teclado
