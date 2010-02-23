@@ -25,6 +25,7 @@ URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_compface:BuildRequires:	compface-devel}
+BuildRequires:	dbus-glib-devel
 BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
