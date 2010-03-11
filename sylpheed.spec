@@ -13,17 +13,18 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	2.7.1
+Version:	3.0.0
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.sraoss.jp/sylpheed/v2.7/%{name}-%{version}.tar.bz2
-# Source0-md5:	1f470525c1fbe53253813a0978c18228
+Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0/%{name}-%{version}.tar.bz2
+# Source0-md5:	bb2cf4adfa9577746f54a516e9471bfd
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
 BuildRequires:	automake
 %{?with_compface:BuildRequires:	compface-devel}
+BuildRequires:	dbus-glib-devel
 BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
@@ -66,8 +67,8 @@ Szybki klient poczty o możliwościach takich jak:
 - wsparcie szyfrowania SSL
 
 %description -l pt_BR.UTF-8
-Este programa é um rápido cliente de email modo gráfico o qual
-possui recursos como:
+Este programa é um rápido cliente de email modo gráfico o qual possui
+recursos como:
 - interface gráfica intuitiva e amigável
 - cliente integrado de notícias (parcialmente implementado)
 - habilitado para operacão a partir do teclado
@@ -133,8 +134,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(fr) %{_datadir}/%{name}/faq/fr
 %lang(it) %{_datadir}/%{name}/faq/it
 %{_desktopdir}/sylpheed.desktop
-%attr(755,root,root) %{_libdir}/libsylph-0.so.0
+%attr(755,root,root) %{_libdir}/libsylph-0.so.1
 %attr(755,root,root) %{_libdir}/libsylph-0.so.*.*.*
-%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.0
+%attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.1
 %attr(755,root,root) %{_libdir}/libsylpheed-plugin-0.so.*.*.*
 %{_pixmapsdir}/sylpheed.png
