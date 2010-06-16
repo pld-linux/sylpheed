@@ -9,16 +9,17 @@
 %bcond_without	ssl		# without SSL support
 %bcond_with	oniguruma	# with oniguruma support
 #
+%define		_beta	beta1
 Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	3.0.2
-Release:	2
+Version:	3.1.0
+Release:	0.%{_beta}.1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0/%{name}-%{version}.tar.bz2
-# Source0-md5:	2ee330c737b02418d8692bd193f8b176
+Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.1beta/%{name}-%{version}%{_beta}.tar.bz2
+# Source0-md5:	99f6e52d09f4a0ce2746756b416f1e86
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -32,6 +33,7 @@ BuildRequires:	gtk+2-devel >= 2:2.4.0
 BuildRequires:	libtool
 %{?with_ldap:BuildRequires:	openldap-devel >= 2.4.6}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8b}
+BuildRequires:	perl-base
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
 BuildRequires:	pkgconfig
 Requires:	mailcap
@@ -80,7 +82,7 @@ recursos como:
 - catálogo de enderecos XML-based
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}%{_beta}
 %patch0 -p1
 
 mv -f po/{sr,sr@latin}.po
