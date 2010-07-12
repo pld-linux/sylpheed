@@ -13,12 +13,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	3.0.2
-Release:	2
+Version:	3.0.3
+Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
 Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0/%{name}-%{version}.tar.bz2
-# Source0-md5:	2ee330c737b02418d8692bd193f8b176
+# Source0-md5:	0428c2625961d76ecb62f3965eb6ee88
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -113,6 +113,8 @@ install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 
 install %{name}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 install %{name}.png $RPM_BUILD_ROOT%{_pixmapsdir}
+
+find $RPM_BUILD_ROOT '(' -name '*.a' -o -name '*.la' -o -name '*.h' -o -name '*-test' ')' -print0 | xargs -0 rm -f
 
 %find_lang %{name}
 
