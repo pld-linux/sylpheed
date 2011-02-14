@@ -13,12 +13,12 @@ Summary:	GTK+ based fast e-mail client
 Summary(pl.UTF-8):	Szybki klient poczty bazujący na GTK+
 Summary(pt_BR.UTF-8):	Um rápido e leve cliente de email baseado em GTK+
 Name:		sylpheed
-Version:	3.0.3
+Version:	3.1.0
 Release:	1
 License:	GPL v2+
 Group:		X11/Applications/Networking
-Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.0/%{name}-%{version}.tar.bz2
-# Source0-md5:	0428c2625961d76ecb62f3965eb6ee88
+Source0:	http://sylpheed.sraoss.jp/sylpheed/v3.1/%{name}-%{version}.tar.bz2
+# Source0-md5:	311847d73d0dda63a48e5ec107538424
 Patch0:		%{name}-nolibs.patch
 URL:		http://sylpheed.sraoss.jp/en/
 BuildRequires:	autoconf >= 2.50
@@ -29,9 +29,11 @@ BuildRequires:	gettext-devel
 %{?with_gpg:BuildRequires:	gpgme-devel >= 1:0.4.5}
 BuildRequires:	gtk+2-devel >= 2:2.4.0
 %{?with_gtkspell:BuildRequires:	gtkspell-devel}
+BuildRequires:	libassuan-devel
 BuildRequires:	libtool
 %{?with_ldap:BuildRequires:	openldap-devel >= 2.4.6}
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.8b}
+BuildRequires:	perl-base
 %{?with_jpilot:BuildRequires:	pilot-link-devel}
 BuildRequires:	pkgconfig
 Requires:	mailcap
@@ -62,8 +64,7 @@ Szybki klient poczty o możliwościach takich jak:
 - klawiszologia typu Mew/Wanderlust
 - obsługa wieloczęściowych MIME
 - obsługa dowolnej ilości kont pocztowych
-- funkcje sortowania
-- książka adresowa
+- funkcje sortowania5- książka adresowa
 - wsparcie szyfrowania SSL
 
 %description -l pt_BR.UTF-8
@@ -114,7 +115,7 @@ install -d $RPM_BUILD_ROOT{%{_desktopdir},%{_pixmapsdir}}
 install %{name}.desktop $RPM_BUILD_ROOT%{_desktopdir}
 install %{name}.png $RPM_BUILD_ROOT%{_pixmapsdir}
 
-find $RPM_BUILD_ROOT '(' -name '*.a' -o -name '*.la' -o -name '*.h' -o -name '*-test' ')' -print0 | xargs -0 rm -f
+find $RPM_BUILD_ROOT '(' -name '*.a' -o -name '*.la' -o -name '*.h' -o -name '*-test' ')' -print0 | xargs -0 %{__rm}
 
 %find_lang %{name}
 
